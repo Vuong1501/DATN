@@ -51,9 +51,18 @@ const ShopContextProvider = (props) => {
         return totalCount;
     }
 
+    // update lai so luong san pham tron gio hang
+    const updateQuantity = async (itemId, size, quantity) => {
+        let cartData = structuredClone(cartItems);
+
+        cartData[itemId][size] = quantity;
+
+        setCartItems(cartData);
+    }
+
     const value = {
         products, currency, delivery_fee, search, setSearch, showSearch, setShowSearch, cartItems, setCartItems, addTocart,
-        getCartCount
+        getCartCount, updateQuantity
     }
 
     return (
