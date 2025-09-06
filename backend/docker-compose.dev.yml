@@ -1,0 +1,23 @@
+services:
+  user-service:
+    build:
+      context: ./services/user-service
+      target: dev
+    volumes:
+      - ./services/user-service/src:/app/src
+      - ./common:/app/common
+      - /app/node_modules
+    command: npm run dev
+    ports:
+      - "3001:3001"
+  product-service:
+    build:
+      context: ./services/product-service
+      target: dev
+    volumes:
+      - ./services/product-service/src:/app/src
+      - ./common:/app/common
+      - /app/node_modules
+    command: npm run dev
+    ports:
+      - "3002:3002"

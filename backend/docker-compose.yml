@@ -1,1 +1,73 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./db-init:/docker-entrypoint-initdb.d
+    networks:
+      - mynet
 
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    networks:
+      - mynet
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    ports:
+      - "5672:5672" # AMQP
+      - "15672:15672" # UI quản trị
+    networks:
+      - mynet
+
+  user-service:
+    build:
+      context: ./services/user-service
+      target: prod
+    ports:
+      - "3001:3001"
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_DB: user_db
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://rabbitmq:5672
+      PORT: 3001
+    depends_on:
+      - mysql
+      - redis
+      - rabbitmq
+    networks:
+      - mynet
+
+  product-service:
+    build:
+      context: ./services/product-service
+      target: prod
+    ports:
+      - "3002:3002"
+    environment:
+      CLOUDINARY_API_KEY: "721485181895396"
+      CLOUDINARY_SECRET_KEY: "xxtr6zkzVCdLpDFYIk9ljTpJKkk"
+      CLOUDINARY_NAME: "dcnwcdqip"
+      MYSQL_HOST: mysql
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_DB: product_db
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://rabbitmq:5672
+      PORT: 3002
+    depends_on:
+      - mysql
+      - redis
+      - rabbitmq
+    networks:
+      - mynet
+networks:
+  mynet:
+    driver: bridge
