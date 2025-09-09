@@ -13,4 +13,8 @@ npm install --save-dev nodemon
 ----- docker exec -it mysql_container mysql -u root -p mydb
 
 
+-- lệnh log 1 service nào đó
+----- docker-compose logs -f product-service
+
+
 
