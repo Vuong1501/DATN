@@ -4,6 +4,7 @@ import { connectMySQL } from "./config/db.js";
 import { connectRedis } from "../common/redis/redis.js";
 import { connectRabbitMQ } from "../common/rabbitmq/rabbitmq.js";
 import healthRouter from "./routes/health.js";
+import userRouter from "./routes/user.route.js";
 
 // App Config
 const app = express();
@@ -23,6 +24,7 @@ app.use(cors());
 
 // routes
 app.use("/health", healthRouter);
+app.use("/users", userRouter);
 
 async function startServer() {
     try {
