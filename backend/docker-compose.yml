@@ -30,14 +30,8 @@ services:
       target: prod
     ports:
       - "3001:3001"
-    environment:
-      MYSQL_HOST: mysql
-      MYSQL_USER: root
-      MYSQL_PASSWORD: root
-      MYSQL_DB: user_db
-      REDIS_URL: redis://redis:6379
-      RABBITMQ_URL: amqp://rabbitmq:5672
-      PORT: 3001
+    env_file:
+      - ./services/user-service/.env
     depends_on:
       - mysql
       - redis
@@ -51,17 +45,8 @@ services:
       target: prod
     ports:
       - "3002:3002"
-    environment:
-      CLOUDINARY_API_KEY: "721485181895396"
-      CLOUDINARY_SECRET_KEY: "xxtr6zkzVCdLpDFYIk9ljTpJKkk"
-      CLOUDINARY_NAME: "dcnwcdqip"
-      MYSQL_HOST: mysql
-      MYSQL_USER: root
-      MYSQL_PASSWORD: root
-      MYSQL_DB: product_db
-      REDIS_URL: redis://redis:6379
-      RABBITMQ_URL: amqp://rabbitmq:5672
-      PORT: 3002
+    env_file:
+      - ./services/product-service/.env
     depends_on:
       - mysql
       - redis

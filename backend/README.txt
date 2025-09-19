@@ -10,11 +10,26 @@ npm install --save-dev nodemon
 -- chạy code ở folder backend
 
 -- lệnh kiểm tra bảng csdl
------ docker exec -it mysql_container mysql -u root -p mydb
+----- docker exec -it mysql_container mysql -u root -p mydb(thay mydb thành db mà service đang sử dụng)
+----- USE user_db;
+----- SHOW TABLES;
+----- SELECT * FROM users;
 
 
 -- lệnh log 1 service nào đó
 ----- docker-compose logs -f product-service
+
+-- lệnh THÊM ADMIN ĐẦU TIÊN
+docker exec -it id-container-user sh => node src/seedAdmin.js
+
+
+
+-- TÍNH NĂNG
+--- ĐĂNG KÍ
+---- Ở màn hình đăng nhập hiển thị nút đăng nhập bằng gg hoặc nút đăng kí, nếu ấn nút đăng kí thì chuyển sang form đăng kí, nếu đăng kí bình thường thì khi đăng kí xong cần điền tài
+khoản, mật khẩu để đăng nhập, và bên form đăng kí cũng có đăng kí bằng gg, sau khi xác nhận thì sẽ cho đăng nhâp luôn
+
+
 
 
 

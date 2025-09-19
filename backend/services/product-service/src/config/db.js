@@ -1,7 +1,5 @@
 // src/config/db.js
-import mysql from "mysql2/promise";
-
-let pool;
+import { Sequelize } from "mysql2/promise";
 
 export const connectMySQL = async () => {
     if (!pool) {
@@ -35,3 +33,17 @@ export const connectMySQL = async () => {
     }
     return pool;
 };
+
+// const sequelize = new Sequelize(
+//     process.env.MYSQL_DB,
+//     process.env.MYSQL_USER,
+//     process.env.MYSQL_PASSWORD,
+//     {
+//         host: process.env.MYSQL_HOST,
+//         dialect: "mysql",
+//         logging: false,
+//     }
+// );
+
+// export default sequelize;
+// từ giờ dùng sequelize chứ không dùng kiểu sql nữa
