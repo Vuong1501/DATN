@@ -10,6 +10,10 @@ const loginUser = async (data) => {
 const refreshAccessToken = async () => {
     const res = await axios.post(`${API_URL}/refreshToken`, {}, { withCredentials: true });
     return res.data;
+};
+
+const logoutUser = () => {
+    return axios.post(`${API_URL}/logout`, {}, { withCredentials: true });
 }
 
-export { loginUser, refreshAccessToken };
+export { loginUser, refreshAccessToken, logoutUser };

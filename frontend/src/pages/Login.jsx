@@ -12,7 +12,6 @@ const Login = () => {
     const onSubmitHandler = async (event) => {
         event.preventDefault();
         login(email, password);
-        console.log("Input values:", email, password);
     };
 
     return (

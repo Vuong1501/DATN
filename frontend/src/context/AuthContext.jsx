@@ -1,5 +1,5 @@
 import { createContext, useState, useContext, useEffect } from "react";
-import { loginUser, refreshAccessToken } from "../services/authService.js";
+import { loginUser, refreshAccessToken, logoutUser } from "../services/authService.js";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
@@ -19,8 +19,8 @@ const AuthProvider = (props) => {
                 setAccessToken(data.accessToken);
             } catch (error) {
                 console.log("Không thể refresh token:", error.message);
-            }
-        }
+            };
+        };
         initAuth();
     }), [];
 
@@ -35,10 +35,18 @@ const AuthProvider = (props) => {
         }
     };
 
+    const logout = async () => {
+        try {
+            await logoutUser();
+            setAccessToken(null);
+            toast.success("Đăng xuất thành công");
+            navigate("/login");
+        } catch (error) {
+            toast.error("Đăng xuất thất bại");
+        }
+    }
 
-
-
-    const value = { accessToken, user, login };
+    const value = { accessToken, user, login, logout };
 
     return <AuthContext.Provider value={value}>{props.children}</AuthContext.Provider>;
 }
