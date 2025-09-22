@@ -32,6 +32,10 @@ docker exec -it id-container-user sh => node src/seedAdmin.js
 khoản, mật khẩu để đăng nhập, và bên form đăng kí cũng có đăng kí bằng gg, sau khi xác nhận thì sẽ cho đăng nhâp luôn
 
 
+-- lấy ra thông tin user đang đăng nhập thì cần gửi theo access token (viết thêm api đó và config axios private)
+-- đăng nhập, đăng kí bằng gg bên fe
+
+
 
 
 

@@ -26,7 +26,7 @@ const refreshTokenController = async (req, res) => {
         const { accessToken } = await refreshAccessToken(refreshToken);
         res.json({ accessToken });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(401).json({ error: error.message });
     }
 }
 
@@ -60,7 +60,7 @@ const loginController = async (req, res) => {
             accessToken
         });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(400).json({ error: error.message });
     }
 }
 

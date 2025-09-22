@@ -1,6 +1,9 @@
 
 import React, { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+import { toast } from "react-toastify";
+import { registerUser } from "../services/authService.js";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
     const { login } = useContext(AuthContext);
@@ -9,9 +12,23 @@ const Login = () => {
     const [password, setPassword] = useState("");
     const [name, setName] = useState("");
 
+    const navigate = useNavigate();
+
     const onSubmitHandler = async (event) => {
         event.preventDefault();
-        login(email, password);
+        try {
+            if (currentState === "Login") {
+                login(email, password);
+            } else {
+                const data = await registerUser({ username: name, email, password });
+                toast.success("Đăng kí thành công");
+                setCurrentState("Login");
+                navigate("/login");
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.error || "Đăng kí thất bại");
+        };
+
     };
 
     return (
