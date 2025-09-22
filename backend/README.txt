@@ -22,6 +22,8 @@ npm install --save-dev nodemon
 -- lệnh THÊM ADMIN ĐẦU TIÊN
 docker exec -it id-container-user sh => node src/seedAdmin.js
 
+-- Khi cài thư viện mới cần build lại với --no-cache
+
 
 
 -- TÍNH NĂNG
