@@ -8,7 +8,6 @@ export const AuthContext = createContext(); //tạo ra context rỗng
 const AuthProvider = (props) => {
     const [accessToken, setAccessToken] = useState(null);
     const [user, setUser] = useState(null); // thông tin user sau khi đăng nhập
-    // const [loading, setLoading] = useState(true); // để check khi f5
 
     const navigate = useNavigate();
 
@@ -16,7 +15,6 @@ const AuthProvider = (props) => {
         const initAuth = async () => {
             try {
                 const data = await refreshAccessToken();
-                console.log("dataaaa", data);
 
                 setAccessToken(data.accessToken);
             } catch (error) {

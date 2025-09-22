@@ -214,4 +214,11 @@ const createAdminService = async ({ username, email, password }) => {
     }
 }
 
-export { getGoogleAuthURL, loginWithGoogle, refreshAccessToken, registerService, loginService, createAdminService };
+const logoutService = async (res) => {
+    res.clearCookie("refreshToken", {
+        httpOnly: true,
+    });
+    return true;
+}
+
+export { getGoogleAuthURL, loginWithGoogle, refreshAccessToken, registerService, loginService, createAdminService, logoutService };
