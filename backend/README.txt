@@ -24,6 +24,9 @@ docker exec -it id-container-user sh => node src/seedAdmin.js
 
 -- Khi cài thư viện mới cần build lại với --no-cache
 
+-- xem lấy đúng biến môi trường chưa
+docker exec -it <container_id> env | grep GOOGLE_CLIENT_SECRET
+
 
 
 -- TÍNH NĂNG
@@ -32,8 +35,8 @@ docker exec -it id-container-user sh => node src/seedAdmin.js
 khoản, mật khẩu để đăng nhập, và bên form đăng kí cũng có đăng kí bằng gg, sau khi xác nhận thì sẽ cho đăng nhâp luôn
 
 
--- lấy ra thông tin user đang đăng nhập thì cần gửi theo access token (viết thêm api đó và config axios private)
--- đăng nhập, đăng kí bằng gg bên fe
+Client secret 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
+Client ID 852218064853-7aog4t8ibs7gfio6rs4vs3fo1ve5jqlg.apps.googleusercontent.com
 
 
 

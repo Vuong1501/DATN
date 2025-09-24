@@ -8,10 +8,17 @@ const googleLogin = (req, res) => {
 const googleCallback = async (req, res) => {
     try {
         const code = req.query.code;
-        const { user, accessToken, refreshToken } = await loginWithGoogle(code);
-        res.json({ user, accessToken, refreshToken });
+
+        const { accessToken, refreshToken } = await loginWithGoogle(code);
+        // Gửi refresh Token qua httpOnly
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+        const redirectUrl = `http://localhost:5173/login-success?token=${accessToken}`;
+        res.redirect(redirectUrl);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.redirect(`http://localhost:5173/login/failed?error=${encodeURIComponent(error.message)}`);
     }
 };
 
@@ -28,8 +35,7 @@ const refreshTokenController = async (req, res) => {
     } catch (error) {
         res.status(401).json({ error: error.message });
     }
-}
-
+};
 
 // Register
 const registerUserController = async (req, res) => {
@@ -39,11 +45,11 @@ const registerUserController = async (req, res) => {
         return res.status(201).json({
             message: "Đăng ký thành công",
             user
-        })
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
-    }
-}
+    };
+};
 
 const loginController = async (req, res) => {
     try {
@@ -56,13 +62,12 @@ const loginController = async (req, res) => {
         });
         return res.status(200).json({
             message: "Đăng nhập thành công",
-            user,
             accessToken
         });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
-}
+};
 
 const createAdminController = async (req, res) => {
     try {
@@ -75,7 +80,7 @@ const createAdminController = async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
-}
+};
 
 const logoutController = async (req, res) => {
     try {
@@ -84,7 +89,7 @@ const logoutController = async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
-}
+};
 
 
 export { googleLogin, googleCallback, refreshTokenController, registerUserController, loginController, createAdminController, logoutController };

@@ -44,9 +44,13 @@ const AuthProvider = (props) => {
         } catch (error) {
             toast.error("Đăng xuất thất bại");
         }
-    }
+    };
+    const setAuthData = ({ accessToken, user }) => {
+        setAccessToken(accessToken);
+        setUser(user);
+    };
 
-    const value = { accessToken, user, login, logout };
+    const value = { accessToken, user, login, logout, setAuthData };
 
     return <AuthContext.Provider value={value}>{props.children}</AuthContext.Provider>;
 }

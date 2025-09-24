@@ -4,6 +4,7 @@ import { AuthContext } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import { registerUser } from "../services/authService.js";
 import { useNavigate } from "react-router-dom";
+import { assets } from "../assets/assets.js";
 
 const Login = () => {
     const { login } = useContext(AuthContext);
@@ -30,6 +31,10 @@ const Login = () => {
         };
 
     };
+
+    // const handleGoogleAuth = async (event) => {
+    //     event.preventDefault();
+    // }
 
     return (
         <form onSubmit={onSubmitHandler} className="flex flex-col items-center w-[90%] sm:max-w-96 m-auto mt-14 gap-4 text-gray-800">
@@ -73,6 +78,13 @@ const Login = () => {
 
             </div>
             <button className="bg-black text-white font-light px-8 py-2 mt-4">{currentState === 'Login' ? 'Sign In' : 'Sign Up'}</button>
+            <button
+                onClick={() => window.location.href = "http://localhost:3001/users/auth/google"}
+                type="button"
+                className="bg-black text-white font-light px-8 py-2 mt-4 flex items-center justify-center gap-2 border border-gray-500">
+                <img src={assets.logo_gg} alt="Google" className="w-5 h-5" />
+                {currentState === "Login" ? "Sign in with Google" : "Sign up with Google"}
+            </button>
         </form>
     )
 }

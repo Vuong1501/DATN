@@ -5,7 +5,6 @@ import { google } from "googleapis";
 import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import router from "../routes/user.route.js";
 
 
 const oauth2Client = new google.auth.OAuth2(
@@ -67,7 +66,6 @@ const loginWithGoogle = async (code) => {
         if (!user) {
             // nếu DB có user với cùng email (local), bạn có thể liên kết thay vì tạo mới
             const existingByEmail = await User.findOne({ where: { email: googleUser.email } });
-            console.log("existingByEmail", existingByEmail);
 
             if (existingByEmail) {
                 existingByEmail.provider = "google";
@@ -102,7 +100,7 @@ const loginWithGoogle = async (code) => {
     } catch (err) {
         throw err;
     }
-}
+};
 
 const refreshAccessToken = (refreshToken) => {
     try {
@@ -127,7 +125,7 @@ const refreshAccessToken = (refreshToken) => {
             throw error;
         }
     }
-}
+};
 
 const registerService = async ({ username, email, password }) => {
     try {
@@ -152,7 +150,7 @@ const registerService = async ({ username, email, password }) => {
     } catch (error) {
         throw error;
     }
-}
+};
 
 const loginService = async ({ email, password }) => {
     try {
@@ -177,20 +175,11 @@ const loginService = async ({ email, password }) => {
             process.env.JWT_REFRESH_SECRET,
             { expiresIn: "7d" }
         );
-        return {
-            user: {
-                id: user.id,
-                username: user.username,
-                email: user.email,
-                role: user.role
-            },
-            accessToken,
-            refreshToken
-        }
+        return { accessToken, refreshToken }
     } catch (error) {
         throw error;
     }
-}
+};
 
 const createAdminService = async ({ username, email, password }) => {
     const existUser = await User.findOne({ where: { email } });
@@ -212,13 +201,13 @@ const createAdminService = async ({ username, email, password }) => {
         email: newAdmin.email,
         role: newAdmin.role
     }
-}
+};
 
 const logoutService = async (res) => {
     res.clearCookie("refreshToken", {
         httpOnly: true,
     });
     return true;
-}
+};
 
 export { getGoogleAuthURL, loginWithGoogle, refreshAccessToken, registerService, loginService, createAdminService, logoutService };
