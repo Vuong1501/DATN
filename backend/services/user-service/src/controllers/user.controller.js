@@ -1,4 +1,8 @@
-import { getGoogleAuthURL, loginWithGoogle, refreshAccessToken, registerService, loginService, createAdminService, logoutService } from "../service/user.service.js";
+import {
+    getGoogleAuthURL, loginWithGoogle, refreshAccessToken,
+    registerService, loginService, createAdminService, logoutService,
+    getCurrentUserService
+} from "../service/user.service.js";
 
 const googleLogin = (req, res) => {
     const url = getGoogleAuthURL();
@@ -91,5 +95,20 @@ const logoutController = async (req, res) => {
     }
 };
 
+const getCurrentUserController = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const user = await getCurrentUserService(userId);
 
-export { googleLogin, googleCallback, refreshTokenController, registerUserController, loginController, createAdminController, logoutController };
+        return res.status(200).json({ user });
+    } catch (error) {
+        return res.status(400).json({ error: error.message });
+    }
+}
+
+
+export {
+    googleLogin, googleCallback, refreshTokenController,
+    registerUserController, loginController, createAdminController,
+    logoutController, getCurrentUserController
+};

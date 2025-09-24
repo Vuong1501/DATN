@@ -210,4 +210,21 @@ const logoutService = async (res) => {
     return true;
 };
 
-export { getGoogleAuthURL, loginWithGoogle, refreshAccessToken, registerService, loginService, createAdminService, logoutService };
+const getCurrentUserService = async (userId) => {
+    try {
+        const user = await User.findByPk(userId, {
+            attributes: ['id', 'username', 'role', 'provider'],
+            raw: true
+        });
+        if (!user) throw new Error("User không tồn tại");
+        return user;
+    } catch (error) {
+        throw error;
+    };
+};
+
+export {
+    getGoogleAuthURL, loginWithGoogle, refreshAccessToken,
+    registerService, loginService, createAdminService, logoutService,
+    getCurrentUserService
+};
