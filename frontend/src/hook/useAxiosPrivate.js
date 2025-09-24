@@ -1,11 +1,11 @@
-import { useEffect, useContext } from "react";
+import { useEffect, useContext, useRef } from "react";
 import axiosPrivate from "../apiConfig/axiosPrivate";
 import { AuthContext } from "../context/AuthContext";
 import { refreshAccessToken } from "../services/authService";
 
-
 const useAxiosPrivate = () => {
     const { accessToken, authData } = useContext(AuthContext);
+    const refreshPromiseRef = useRef(null); // biến giữ promise refresh đang chạy
 
     useEffect(() => {
         // Request interceptor: gắn token
@@ -26,10 +26,21 @@ const useAxiosPrivate = () => {
                 if (error?.response?.status === 401 && !prevRequest?.sent) {
                     prevRequest.sent = true;
                     try {
-                        const data = await refreshAccessToken();
-                        authData({ accessToken: data.accessToken });
-                        prevRequest.headers["Authorization"] = `Bearer ${data.accessToken}`;
-                        return axiosPrivate(prevRequest);
+                        // Nếu chưa có refresh đang chạy, tạo refreshPromise
+                        if (!refreshPromiseRef.current) {
+                            refreshPromiseRef.current = refreshAccessToken()
+                                .then((data) => {
+                                    authData({ accessToken: data.accessToken });
+                                    return data.accessToken;
+                                })
+                                .finally(() => {
+                                    refreshPromiseRef.current = null; // reset sau khi xong
+                                });
+                        }
+                        // Chờ refreshPromise hoàn tất và lấy token mới
+                        const newAccessToken = await refreshPromiseRef.current;
+                        prevRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
+                        return axiosPrivate(prevRequest); // retry request
                     } catch (err) {
                         return Promise.reject(err);
                     }
