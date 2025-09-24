@@ -45,12 +45,12 @@ const AuthProvider = (props) => {
             toast.error("Đăng xuất thất bại");
         }
     };
-    const setAuthData = ({ accessToken, user }) => {
+    const authData = ({ accessToken, user }) => {
         setAccessToken(accessToken);
         setUser(user);
     };
 
-    const value = { accessToken, user, login, logout, setAuthData };
+    const value = { accessToken, user, login, logout, authData };
 
     return <AuthContext.Provider value={value}>{props.children}</AuthContext.Provider>;
 }
