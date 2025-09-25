@@ -38,6 +38,8 @@ khoản, mật khẩu để đăng nhập, và bên form đăng kí cũng có đ
 Client secret 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
 Client ID 852218064853-7aog4t8ibs7gfio6rs4vs3fo1ve5jqlg.apps.googleusercontent.com
 
+chiều xem đoạn login bằng gg, không truyền access token qua param nữa mà dùng refresh token để cấp access mới
+
 
 
 

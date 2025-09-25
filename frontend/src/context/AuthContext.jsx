@@ -1,5 +1,6 @@
-import { createContext, useState, useContext, useEffect } from "react";
+import { createContext, useState, useEffect } from "react";
 import { loginUser, refreshAccessToken, logoutUser } from "../services/authService.js";
+import { getUserProfile } from "../services/userService.js";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
@@ -13,21 +14,31 @@ const AuthProvider = (props) => {
 
     useEffect(() => {
         const initAuth = async () => {
+
             try {
                 const data = await refreshAccessToken();
-
                 setAccessToken(data.accessToken);
+
+                const userData = await getUserProfile(data.accessToken);
+                setUser(userData);
+
             } catch (error) {
                 console.log("Không thể refresh token:", error.message);
             };
         };
         initAuth();
-    }), [];
+    }, []);
+
 
     const login = async (email, password) => {
         try {
+            // Gọi login, nhận accessToken
             const dataUser = await loginUser({ email, password });
             setAccessToken(dataUser.accessToken);
+            // gọi hàm getUserProfile để nhận thông tin use sau khi login
+            const user = await getUserProfile(dataUser.accessToken);
+            setUser(user);
+
             toast.success("Đăng nhập thành công");
             navigate("/");
         } catch (error) {
@@ -39,7 +50,8 @@ const AuthProvider = (props) => {
         try {
             await logoutUser();
             setAccessToken(null);
-            toast.success("Đăng xuất thành công");
+            setUser(null);
+            toast.success("Đã đăng xuất");
             navigate("/login");
         } catch (error) {
             toast.error("Đăng xuất thất bại");
@@ -49,6 +61,8 @@ const AuthProvider = (props) => {
         setAccessToken(accessToken);
         setUser(user);
     };
+
+
 
     const value = { accessToken, user, login, logout, authData };
 
