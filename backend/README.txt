@@ -28,6 +28,11 @@ docker exec -it id-container-user sh => node src/seedAdmin.js
 docker exec -it <container_id> env | grep GOOGLE_CLIENT_SECRET
 
 
+-- DEMO 1 triệu người cùng mua 1 sản phẩm, tắt 1 service thì service khác vẫn hoạt động bình thường(xem trong chat gpt)
+------------------ Hiện tại chưa làm trang admin, định là client và admin cùng đăng nhập 1 form login, nếu admin sẽ có thêm nút
+admin panel sau login, ấn vào sẽ sang trang admin(xem chat gpt LÚC NÀO LÀM TRANG ADMIN THÌ XEM)
+
+
 
 -- TÍNH NĂNG
 --- ĐĂNG KÍ

@@ -1,9 +1,10 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("../config/database");
+import { DataTypes } from "sequelize";
+import sequelize from "../config/db.js";
 
 // Import model
-const Product = require("./product")(sequelize, DataTypes);
-const ProductImage = require("./productImage")(sequelize, DataTypes);
+import Product from "./product.model.js";
+import ProductImage from "./productImage.model.js";
+import ProductSize from "./productSize.model.js";
 
 Product.hasMany(ProductImage, { foreignKey: "productId", as: "images" });
 ProductImage.belongsTo(Product, { foreignKey: "productId", as: "product" });
@@ -11,7 +12,7 @@ ProductImage.belongsTo(Product, { foreignKey: "productId", as: "product" });
 Product.hasMany(ProductSize, { foreignKey: "productId", as: "sizes" });
 ProductSize.belongsTo(Product, { foreignKey: "productId", as: "product" });
 
-module.exports = { sequelize, Product, ProductImage, ProductSize };
+export { sequelize, Product, ProductImage, ProductSize };
 
 // {
 //   name: "Men T-shirt",
