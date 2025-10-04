@@ -1,10 +1,11 @@
 import express from "express";
 
 import { addProduct } from "../controllers/product.controller.js";
+import { validateAddProduct } from "../validate/product.validate.js";
 import upload from "../middleware/multer.js";
 
 const router = express.Router();
 
-router.post("/add", upload.fields([{ name: 'image1', maxCount: 1 }, { name: 'image2', maxCount: 1 }, { name: 'image3', maxCount: 1 }, { name: 'image4', maxCount: 1 },]), addProduct);
+router.post("/add", upload.array("images", 5), validateAddProduct, addProduct);
 
 export default router;

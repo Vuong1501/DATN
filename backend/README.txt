@@ -43,14 +43,17 @@ khoản, mật khẩu để đăng nhập, và bên form đăng kí cũng có đ
 Client secret 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
 Client ID 852218064853-7aog4t8ibs7gfio6rs4vs3fo1ve5jqlg.apps.googleusercontent.com
 
-chiều xem đoạn login bằng gg, không truyền access token qua param nữa mà dùng refresh token để cấp access mới
 Trong e-commerce, quan trọng nhất là tính nhất quán dữ liệu (đơn hàng – thanh toán – tồn kho) và khả năng chịu tải cao khi traffic đột biến (sale, flash sale).
 Ứng dụng thêm api-gateway(xem đoạn chat LÚC NÀO LÀM API-GATEWAY thì xem)
 
-đang phân vân xem có tách service category không và đoạn upload ảnh lên cloudinary thì dùng cách nào 
+đang phân vân xem đoạn upload ảnh lên cloudinary thì dùng cách nào 
 
 
 tách StockService, categoryService(Gom chung Category + SubCategory vào cùng một service) xem chat gpt đoạn CATEGORY - SERVICE - TỒN KHO
+
+product-service gọi sang categoryService bằng rabbitMQ
+
+-- xem phần validate trước khi tạo sản phẩm mới
 
 
 

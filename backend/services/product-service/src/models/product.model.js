@@ -8,7 +8,6 @@ const Product = sequelize.define("Product", {
     price: { type: DataTypes.FLOAT, allowNull: false },
     category_id: { type: DataTypes.INTEGER, allowNull: false },
     bestSeller: { type: DataTypes.BOOLEAN },
-    date: { type: DataTypes.FLOAT, allowNull: false },
 }, {
     tableName: "products",
     timestamps: true,

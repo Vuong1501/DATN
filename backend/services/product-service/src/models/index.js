@@ -32,3 +32,23 @@ export { sequelize, Product, ProductImage, ProductSize };
 //     { size: "XL", stock: 5 }
 //   ]
 // }
+
+// Dữ liệu mới sau update model product
+// {
+//   "id": 1,
+//   "name": "Áo thun nam",
+//   "description": "Áo thun cotton 100%",
+//   "price": 199000,
+//   "category": {
+//     "id": 2,
+//     "name": "Thời trang nam"
+//   },
+//   "images": [
+//     { "id": 101, "url": "https://cdn.shop/1.png" },
+//     { "id": 102, "url": "https://cdn.shop/2.png" }
+//   ],
+//   "sizes": [
+//     { "id": 10, "size": "M", "stock": 20 },
+//     { "id": 11, "size": "L", "stock": 15 }
+//   ]
+// }

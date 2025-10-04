@@ -4,7 +4,7 @@ import cookieParser from "cookie-parser";
 import sequelize from "./config/db.js";
 import { connectRedis } from "../common/redis/redis.js";
 import { connectRabbitMQ } from "../common/rabbitmq/rabbitmq.js";
-import { connectCloudinary } from "./config/cloudinary.js";
+// import { connectCloudinary } from "./config/cloudinary.js";
 // import userRouter from "./routes/user.route.js";
 import productRouter from "./routes/product.route.js";
 
@@ -26,7 +26,7 @@ app.use(cookieParser());
 // app.use("/users", userRouter);
 app.use("/product", productRouter);
 
-connectCloudinary();
+// connectCloudinary();
 // nếu connect mysql lỗi thì dùng
 // async function connectWithRetry(retries = 5, delay = 5000) {
 //     while (retries) {
@@ -53,6 +53,8 @@ async function startServer() {
         await sequelize.sync({ alter: isDev });
         await connectRedis(REDIS_URL);
         await connectRabbitMQ(RABBITMQ_URL);
+        console.log("NODE_ENV =", process.env.NODE_ENV);
+
 
         app.listen(PORT, () => {
             console.log(`Product service running on port ${PORT}`);

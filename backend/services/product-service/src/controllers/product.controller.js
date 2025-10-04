@@ -1,17 +1,23 @@
 import { addProductService } from "../service/product.service.js";
 
 // thêm sản phẩm
-const addProduct = (req, res) => {
+const addProduct = async (req, res) => {
     try {
-        const { name, description, price, category, subCategory, sizes, bestseller } = req.body;
-        const image1 = req.files.image1[0];
-        const image2 = req.files.image1[1];
-        const image3 = req.files.image1[2];
-        const image4 = req.files.image1[3];
-    } catch (error) {
+        const { name, description, price, category_id, sizes, bestseller } = req.body;
 
-    }
-}
+        const images = req.files;
+
+        const product = await addProductService({ name, description, price, category_id, sizes, bestseller }, images);
+
+        res.status(201).json({
+            message: " Product created successfully",
+            product,
+        });
+    } catch (error) {
+        console.error("Error creating product:", error);
+        res.status(500).json({ error: "Internal server error" });
+    };
+};
 
 // danh sách sản phẩm
 
