@@ -23,3 +23,16 @@ services:
       - "3002:3002"
     environment:
       NODE_ENV: development
+
+  category-service:
+    build:
+      context: ./services/category-service
+      target: dev
+    volumes:
+      - ./services/category-service/src:/app/src
+      - ./common:/app/common
+    command: npm run dev
+    ports:
+      - "3003:3003"
+    environment:
+      NODE_ENV: development

@@ -53,6 +53,21 @@ services:
       - rabbitmq
     networks:
       - mynet
+
+  category-service:
+    build:
+      context: ./services/category-service
+      target: prod
+    ports:
+      - "3003:3003"
+    env_file:
+      - ./services/product-service/.env
+    depends_on:
+      - mysql
+      - redis
+      - rabbitmq
+    networks:
+      - mynet
 networks:
   mynet:
     driver: bridge
