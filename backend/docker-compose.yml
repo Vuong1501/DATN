@@ -61,7 +61,7 @@ services:
     ports:
       - "3003:3003"
     env_file:
-      - ./services/product-service/.env
+      - ./services/category-service/.env
     depends_on:
       - mysql
       - redis

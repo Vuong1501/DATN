@@ -2,17 +2,23 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import sequelize from "./config/db.js";
+import mysql from "mysql2/promise";
 import { connectRedis } from "../common/redis/redis.js";
 import { connectRabbitMQ } from "../common/rabbitmq/rabbitmq.js";
-// import productRouter from "./routes/product.route.js";
+import categoryRouter from "./routes/category.route.js";
 
 const app = express();
 
 const {
     REDIS_URL,
     RABBITMQ_URL,
-    PORT = 3002,
+    PORT = 3003,
+    MYSQL_HOST,
+    MYSQL_USER,
+    MYSQL_PASSWORD,
+    MYSQL_DB,
 } = process.env; // lấy từ docker-compose
+
 // middleware
 app.use(express.json());
 app.use(cors({
@@ -21,11 +27,21 @@ app.use(cors({
 }));
 app.use(cookieParser());
 
+const initDatabase = async () => {
+    const connection = await mysql.createConnection({
+        host: MYSQL_HOST,
+        user: MYSQL_USER,
+        password: MYSQL_PASSWORD,
+    });
+    await connection.query(`CREATE DATABASE IF NOT EXISTS \`${MYSQL_DB}\`;`);
+    await connection.end();
+}
+
 // routes
-// app.use("/product", productRouter);
+app.use("/category", categoryRouter);
 
 // nếu connect mysql lỗi thì dùng
-// async function connectWithRetry(retries = 5, delay = 5000) {
+// const connectWithRetry = async (retries = 5, delay = 5000) => {
 //     while (retries) {
 //         try {
 //             await sequelize.authenticate();
@@ -40,11 +56,13 @@ app.use(cookieParser());
 //             await new Promise((res) => setTimeout(res, delay));
 //         }
 //     }
-// }
+// };
 
-async function startServer() {
+const startServer = async () => {
     try {
-        // await connectWithRetry(); nếu connect mysql lỗi thì dùng
+        await initDatabase();
+        // nếu connect mysql lỗi thì dùng
+        // await connectWithRetry();
         await sequelize.authenticate();
         const isDev = process.env.NODE_ENV !== "production"; // check môi trường
         await sequelize.sync({ alter: isDev });
@@ -54,7 +72,7 @@ async function startServer() {
 
 
         app.listen(PORT, () => {
-            console.log(`Product service running on port ${PORT}`);
+            console.log(`Category service running on port ${PORT}`);
         });
     } catch (err) {
         console.error("Failed to start service:", err);
