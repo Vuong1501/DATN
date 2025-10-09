@@ -1,4 +1,14 @@
-import { addProductService } from "../service/product.service.js";
+import { addProductService, getCategoriesService } from "../service/product.service.js";
+
+const getCategories = async (req, res) => {
+    try {
+        const categories = await getCategoriesService();
+        res.json({ categories });
+    } catch (err) {
+        console.error("❌ Lấy danh mục thất bại:", err.message);
+        res.status(500).json({ message: "Lấy danh mục thất bại" });
+    }
+};
 
 // thêm sản phẩm
 const addProduct = async (req, res) => {
@@ -25,4 +35,4 @@ const addProduct = async (req, res) => {
 
 // chi tiết sản phẩm
 
-export { addProduct };
+export { addProduct, getCategories };

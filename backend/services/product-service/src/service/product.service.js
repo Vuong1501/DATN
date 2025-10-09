@@ -1,6 +1,10 @@
 import { Product, ProductImage, ProductSize } from "../models/index.js";
+import { getRedis } from "../../common/redis/redis.js";
 import cloudinary from "../config/cloudinary.js";
 import sequelize from "../config/db.js";
+import axios from "axios";
+
+const CATEGORY_SERVICE_URL = "http://category-service:3003/category";
 
 // hàm upload 1 file buffer lên cloudinary
 const uploadToCloudinary = (file) => {
@@ -55,8 +59,15 @@ const addProductService = async ({ name, description, price, category_id, sizes,
                 await ProductSize.create({ size, productId: product.id }, { transaction });
             }
         }
-
         await transaction.commit();
+        const redis = getRedis();
+        const cachedCategories = await redis.get("categories:all");
+        let categoryName = null;
+        if (cachedCategories) {
+            const categories = JSON.parse(cachedCategories);
+            const found = categories.find(c => c.id === parseInt(category_id));
+            if (found) categoryName = found.name;
+        }
 
         const productWithRelations = await Product.findByPk(product.id, {
             attributes: ["id", "name", "description", "price", "bestSeller"],
@@ -65,7 +76,12 @@ const addProductService = async ({ name, description, price, category_id, sizes,
                 { model: ProductSize, as: "sizes", attributes: ["size"] }
             ]
         });
-        return productWithRelations;
+
+        const productResponse = {
+            ...productWithRelations.toJSON(),
+            category: categoryName || null
+        };
+        return productResponse;
     } catch (err) {
         await transaction.rollback();
         // xóa những ảnh đã upload trên Cloudinary
@@ -78,4 +94,33 @@ const addProductService = async ({ name, description, price, category_id, sizes,
     }
 
 };
-export { addProductService };
+
+const getCategoriesService = async () => {
+    const redis = getRedis();
+
+    // Đo thời gian bắt đầu
+    const start = Date.now();
+
+    // Kiểm tra cache
+    const cached = await redis.get("categories:all");
+    if (cached) {
+        const elapsed = Date.now() - start;
+        console.log(`⚡ Lấy danh mục từ Redis cache (${elapsed}ms)`);
+        return JSON.parse(cached);
+    }
+
+    // Gọi Category-service qua REST
+    console.log("🌐 Gọi Category-service qua REST...");
+    const response = await axios.get(`${CATEGORY_SERVICE_URL}/getAll`);
+
+    const categories = response.data;
+
+    // Lưu cache (1h)
+    await redis.set("categories:all", JSON.stringify(categories), { EX: 3600 });
+    // Đo thời gian chạy
+    const elapsed = Date.now() - start;
+    console.log(`⏱️ Lấy danh mục qua REST mất ${elapsed}ms`);
+    return categories;
+};
+
+export { addProductService, getCategoriesService };

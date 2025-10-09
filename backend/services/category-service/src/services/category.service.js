@@ -1,4 +1,5 @@
 import Category from "../models/category.model.js";
+import { publishCategoryEvent } from "./categoryPublisher.js";
 
 const addCategoryService = async ({ name, parent_id }) => {
     try {
@@ -6,11 +7,17 @@ const addCategoryService = async ({ name, parent_id }) => {
             name,
             parent_id: parent_id || null
         });
+
+        await publishCategoryEvent("create", {
+            id: category.id,
+            name: category.name,
+            parent_id: category.parent_id
+        });
         return category;
     } catch (error) {
         throw new Error("Tạo danh mục lỗi: " + error.message);
     };
-}
+};
 
 const getAllCategoryService = async () => {
     try {

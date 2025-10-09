@@ -7,7 +7,6 @@ export async function connectRabbitMQ(url, retries = 5, delay = 3000) {
         try {
             const connection = await amqp.connect(url);
             channel = await connection.createChannel();
-            await channel.assertQueue("test_queue");
             console.log("✅ Connected to RabbitMQ");
             return channel;
         } catch (err) {

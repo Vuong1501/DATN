@@ -1,0 +1,84 @@
+------REDIS (NÊN cân bằng giữa hiệu năng và tính nhất quán.)
+------PHẦN DANH MỤC VÀ PRODUCT (đang sử dụng rabbitMQ khi có sự kiện thêm sửa xóa khi thêm sửa
+xóa sẽ xóa cache cũ và gọi api lấy cache mới, vào lần đầu sẽ gọi api để lưu cache)
+Tuyệt vời 😎 — bạn đang đi đúng hướng rồi.
+Vì phần Redis cache + Pub/Sub + REST là một chủ đề rất hay, nên nếu thầy cô hỏi sâu, họ sẽ muốn đánh giá xem bạn hiểu bản chất chứ không chỉ làm được.
+Dưới đây là những câu hỏi hay mà giảng viên thường hỏi, chia thành 3 mức: cơ bản → trung bình → nâng cao, kèm gợi ý trả lời ngắn gọn, dễ hiểu để bạn luyện trước nhé 👇
+
+🎯 MỨC 1 – CƠ BẢN: hiểu mô hình cache
+
+1️⃣ Redis trong hệ thống của em dùng để làm gì?
+
+Redis dùng để lưu cache tạm thời các dữ liệu ít thay đổi, ví dụ như danh mục sản phẩm.
+Nhờ vậy, em giảm số lần gọi API hoặc truy vấn database, giúp tốc độ phản hồi nhanh hơn.
+
+2️⃣ Nếu không dùng Redis thì có sao không?
+
+Không sao về mặt logic, nhưng hiệu năng sẽ giảm đáng kể vì mỗi lần cần danh mục sản phẩm, em phải gọi sang service khác hoặc DB, tốn thời gian và tài nguyên.
+
+3️⃣ Khi nào thì dữ liệu trong cache bị xóa hoặc làm mới?
+
+Em đặt thời gian sống (TTL) cho cache, ví dụ 1 giờ. Ngoài ra, khi có sự kiện thay đổi danh mục từ service khác, em dùng Pub/Sub để xóa cache cũ ngay.
+
+⚙️ MỨC 2 – TRUNG BÌNH: hiểu về Pub/Sub và đồng bộ
+
+4️⃣ Tại sao em không cập nhật cache ngay sau khi thêm/sửa/xóa danh mục, mà lại phải dùng Pub/Sub?
+
+Vì cache nằm ở service khác (product-service).
+Khi em thêm danh mục trong category-service, product-service không biết.
+Pub/Sub giúp gửi sự kiện sang product-service để nó biết và xóa cache, đảm bảo dữ liệu đồng bộ giữa các service.
+
+5️⃣ Vì sao em dùng kiểu exchange là "fanout"?
+
+Vì fanout cho phép gửi sự kiện đến tất cả các queue đang lắng nghe,
+phù hợp với tình huống có nhiều service cùng cần biết khi danh mục thay đổi (ví dụ product, search, recommendation...).
+
+6️⃣ Nếu RabbitMQ bị tắt hoặc mất kết nối trong lúc publish thì sao?
+---------------- CHÚ Ý
+Khi đó, sự kiện có thể bị mất tạm thời.
+Để tránh, có thể thêm cơ chế retry hoặc log lỗi để phát hiện.
+Với hệ thống lớn, người ta thường dùng “durable queue” và “persistent messages” để bảo đảm không mất sự kiện.
+
+🧠 MỨC 3 – NÂNG CAO: hiểu sâu bản chất và trade-off
+
+7️⃣ Tại sao em không để tất cả service cùng dùng chung 1 Redis?
+
+Nếu cùng Redis thì sẽ dễ hơn, nhưng khi microservice tách biệt hoàn toàn (độc lập triển khai),
+việc chia Redis riêng giúp tránh xung đột key và tăng tính độc lập, mở rộng dễ dàng hơn.
+
+8️⃣ Nếu 2 service cùng có cache, vậy làm sao em đảm bảo chúng luôn đồng bộ?
+
+Em dùng cơ chế Pub/Sub.
+Mỗi khi có thay đổi từ 1 service, nó sẽ publish sự kiện, các service khác subscribe sẽ nhận được và xóa cache cũ.
+Cách này gọi là event-driven cache invalidation.
+
+9️⃣ Tại sao em không chỉ dựa vào TTL (thời gian sống cache)?
+
+TTL giúp tự refresh sau một thời gian, nhưng có độ trễ.
+Ví dụ admin vừa thêm danh mục, người dùng phải đợi hết TTL mới thấy.
+Còn Pub/Sub giúp cập nhật ngay lập tức khi có thay đổi.
+
+🔟 Trong thực tế, em thấy nhược điểm của cache là gì?
+
+Dữ liệu có thể bị cũ (stale data).
+
+Cần cơ chế invalidation hợp lý.
+
+Nếu cache bị lỗi, hệ thống có thể chậm hoặc sai dữ liệu tạm thời.
+=> Vì vậy cần cân bằng giữa hiệu năng và tính nhất quán.
+
+💬 Câu hỏi "xoáy" (thầy hay hỏi để test hiểu sâu)
+
+11️⃣ Nếu Redis bị mất hết cache (bị xóa toàn bộ), hệ thống của em có lỗi không?
+
+Không ạ. Vì Redis chỉ lưu tạm, nếu mất cache thì API sẽ tự fetch dữ liệu gốc từ DB hoặc service khác rồi lưu lại vào cache.
+
+12️⃣ Nếu category-service publish event, nhưng product-service khởi động sau đó mới bật thì sao? Nó có nhận được event không?
+---------------- CHÚ Ý
+Không, vì fanout exchange gửi event thời điểm đó thôi.
+Nếu cần đảm bảo service nhận được cả event cũ, phải dùng queue bền vững (durable) hoặc message broker có log lưu trữ như Kafka.
+
+13️⃣ Vì sao Redis nhanh hơn DB?
+
+Vì Redis lưu toàn bộ dữ liệu trong RAM, không đọc/ghi từ đĩa như database.
+Các thao tác đọc/ghi chỉ mất vài mili-giây.
