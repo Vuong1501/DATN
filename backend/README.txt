@@ -56,6 +56,7 @@ product-service gọi sang categoryService bằng rabbitMQ
 -- xem phần validate trước khi tạo sản phẩm mới
 
 KHI làm đến đoạn tính nhất quán giữa các service thì xem đoạn chatgpt(KHI LÀM TÍNH NHẤT QUÁN)
+xem các api đó cần authen không, hay là authen ở bên api gateway
 
 
 
