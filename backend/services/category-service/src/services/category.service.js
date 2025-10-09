@@ -47,4 +47,15 @@ const updateCategoryService = async (id, { name, parent_id }) => {
         throw new Error("Sửa danh mục lỗi: " + error.message);
     }
 };
-export { addCategoryService, getAllCategoryService, updateCategoryService };
+
+const deleteCategoryService = async (id) => {
+    try {
+        const category = await Category.findByPk(id);
+        if (!category) throw new Error("Danh mục không tồn tại");
+        await category.destroy();
+        await publishCategoryEvent("update", { id })
+    } catch (error) {
+        throw new Error("Xóa danh mục lỗi: " + error.message);
+    };
+};
+export { addCategoryService, getAllCategoryService, updateCategoryService, deleteCategoryService };

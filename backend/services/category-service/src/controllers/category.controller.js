@@ -1,4 +1,4 @@
-import { addCategoryService, getAllCategoryService, updateCategoryService } from "../services/category.service.js";
+import { addCategoryService, getAllCategoryService, updateCategoryService, deleteCategoryService } from "../services/category.service.js";
 
 const addCategory = async (req, res) => {
     try {
@@ -30,4 +30,14 @@ const updateCategory = async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 };
-export { addCategory, getAllCategory, updateCategory };
+
+const deleteCategory = async (req, res) => {
+    try {
+        await deleteCategoryService(req.params.id);
+
+        res.status(200).json('xóa thành công');
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+export { addCategory, getAllCategory, updateCategory, deleteCategory };
