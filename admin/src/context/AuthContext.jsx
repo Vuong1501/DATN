@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect } from "react";
-import { loginAdmin, refreshAccessToken, getAdminProfile } from "../services/authService";
+import { loginAdmin, refreshAccessToken, getAdminProfile, logoutUser } from "../services/authService";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
@@ -31,14 +31,13 @@ const AuthProviderAdmin = (props) => {
         initAuth();
     }, []);
     const login = async (email, password) => {
-        console.log("Login function called");
         try {
             const data = await loginAdmin({ email, password });
 
             if (data.role !== "admin") {
                 toast.error("Tài khoản không có quyền truy cập admin!");
                 return;
-            }
+            };
 
             setAccessToken(data.accessToken);
             const adminData = await getAdminProfile(data.accessToken);
@@ -48,10 +47,21 @@ const AuthProviderAdmin = (props) => {
             navigate("/admin/dashboard");
         } catch (error) {
             toast.error("Đăng nhập thất bại!");
-        }
+        };
     };
+    const logout = async () => {
+        try {
+            await logoutUser();
+            setAccessToken(null);
+            setAdmin(null);
+            toast.success("Đã đăng xuất");
+            navigate("/admin/login");
+        } catch (error) {
+            toast.error("Đăng xuất thất bại");
+        }
+    }
 
-    const value = { accessToken, login, admin, loading };
+    const value = { accessToken, login, admin, loading, logout };
     return <AuthContextAdmin.Provider value={value}>{props.children}</AuthContextAdmin.Provider>
 };
 export default AuthProviderAdmin;

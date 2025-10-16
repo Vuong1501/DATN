@@ -18,4 +18,8 @@ const getAdminProfile = async token => {
     return res.data;
 };
 
-export { loginAdmin, refreshAccessToken, getAdminProfile };
+const logoutUser = () => {
+    return axios.post(`${API_URL}/logout`, {}, { withCredentials: true });
+};
+
+export { loginAdmin, refreshAccessToken, getAdminProfile, logoutUser };
