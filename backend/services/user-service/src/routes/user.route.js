@@ -14,8 +14,10 @@ router.get("/auth/google/callback", googleCallback);
 router.post("/auth/refreshToken", refreshTokenController);
 router.post("/auth/register", validateRegister, registerUserController);
 router.post("/auth/login", validateLogin, loginController);
-router.post("/auth/admin/create", authAdmin, validateRegister, createAdminController);
 router.post("/auth/logout", logoutController);
 router.get("/auth/me", verifyAccessToken, getCurrentUserController);
+
+//admin
+router.post("/auth/admin/create", authAdmin, validateRegister, createAdminController);
 
 export default router;

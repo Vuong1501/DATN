@@ -18,7 +18,7 @@ const {
 // middleware
 app.use(express.json());
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "http://localhost:5174"],
     credentials: true
 }));
 app.use(cookieParser());
@@ -50,8 +50,10 @@ async function startServer() {
     try {
         // await connectWithRetry(); nếu connect mysql lỗi thì dùng
         await sequelize.authenticate();
-        const isDev = process.env.NODE_ENV !== "production"; // check môi trường
-        await sequelize.sync({ alter: isDev });
+        // khi chạy test thì bật 2 dòng dưới lên
+        // const isDev = process.env.NODE_ENV !== "production"; // check môi trường
+        // await sequelize.sync({ alter: isDev });
+        await sequelize.sync();
         await connectRedis(REDIS_URL);
         await connectRabbitMQ(RABBITMQ_URL);
 

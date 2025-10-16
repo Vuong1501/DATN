@@ -175,7 +175,7 @@ const loginService = async ({ email, password }) => {
             process.env.JWT_REFRESH_SECRET,
             { expiresIn: "7d" }
         );
-        return { accessToken, refreshToken }
+        return { accessToken, refreshToken, role: user.role };
     } catch (error) {
         throw error;
     }

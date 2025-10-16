@@ -34,6 +34,11 @@ const AuthProvider = (props) => {
         try {
             // Gọi login, nhận accessToken
             const dataUser = await loginUser({ email, password });
+
+            if (dataUser.role !== "user") {
+                toast.error("Đăng nhập thất bại!");
+                return;
+            };
             setAccessToken(dataUser.accessToken);
             // gọi hàm getUserProfile để nhận thông tin use sau khi login
             const user = await getUserProfile(dataUser.accessToken);

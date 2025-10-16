@@ -58,7 +58,7 @@ const registerUserController = async (req, res) => {
 const loginController = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const { user, accessToken, refreshToken } = await loginService({ email, password });
+        const { role, accessToken, refreshToken } = await loginService({ email, password });
         // Gửi refresh Token qua httpOnly
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
@@ -66,7 +66,8 @@ const loginController = async (req, res) => {
         });
         return res.status(200).json({
             message: "Đăng nhập thành công",
-            accessToken
+            accessToken,
+            role
         });
     } catch (error) {
         res.status(400).json({ error: error.message });

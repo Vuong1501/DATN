@@ -1,11 +1,15 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react';
+import { AuthContextAdmin } from '../context/AuthContext';
 
 function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const { login } = useContext(AuthContextAdmin);
+
     const onSubmitHandler = async (e) => {
         try {
             e.preventDefault();
+            await login(email, password);
         } catch (error) {
             console.error("e", error);
         }
@@ -21,14 +25,13 @@ function Login() {
                     </div>
                     <div className='mb-3 min-w-72'>
                         <p className='text-sm font-medium text-gray-700 mb-2'>pasword</p>
-                        <input onChange={(e) => setPassword(e.target.value)} value={password} className='rounded-md w-full px-3 py-2 border border border-gray-300 outline-none' type="email" placeholder='your@email.com' required />
+                        <input onChange={(e) => setPassword(e.target.value)} value={password} className='rounded-md w-full px-3 py-2 border border border-gray-300 outline-none' type="password" placeholder='••••••••' required />
                     </div>
                     <button className='mt-2 w-full py-2 px-4 rounded-md text-white bg-black'>Login</button>
                 </form>
             </div>
         </div>
-
-    )
-}
+    );
+};
 
 export default Login;
