@@ -58,8 +58,9 @@ product-service gọi sang categoryService bằng rabbitMQ
 KHI làm đến đoạn tính nhất quán giữa các service thì xem đoạn chatgpt(KHI LÀM TÍNH NHẤT QUÁN)
 xem các api đó cần authen không, hay là authen ở bên api gateway
 -----chiều cần giải thích các đoạn đã làm và xem nó có hợp lí không, có bất hợp lí và sai đâu không
------ chưa có router nào là dashboard
 
+
+-- xem tiếp validate ở fe và be , thông báo rõ hơn phần thêm sản phẩm
 
 
 

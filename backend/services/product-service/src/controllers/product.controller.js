@@ -20,6 +20,7 @@ const addProduct = async (req, res) => {
         const product = await addProductService({ name, description, price, category_id, sizes, bestseller }, images);
 
         res.status(201).json({
+            success: true,
             message: " Product created successfully",
             product,
         });

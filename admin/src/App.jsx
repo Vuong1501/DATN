@@ -1,7 +1,7 @@
-import React, { useContext, useEffect } from 'react'
+import React from 'react'
 import Navbar from './component/Navbar';
 import Sidebar from './component/Sidebar';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, Navigate } from 'react-router-dom';
 import Add from './pages/Add';
 import List from './pages/List';
 import Orders from './pages/Orders';
@@ -18,6 +18,7 @@ function App() {
       <ToastContainer />
 
       <Routes>
+        <Route path="/" element={<Navigate to="/admin/login" />} />
         {/*Route đăng nhập nằm ngoài layout */}
         <Route path="/admin/login" element={<Login />} />
 
