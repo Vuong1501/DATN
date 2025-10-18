@@ -1,4 +1,4 @@
-import { addProductService, getCategoriesService } from "../service/product.service.js";
+import { addProductService, getCategoriesService, getAllProductService } from "../service/product.service.js";
 
 const getCategories = async (req, res) => {
     try {
@@ -31,9 +31,25 @@ const addProduct = async (req, res) => {
 };
 
 // danh sách sản phẩm
+const getAllProduct = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        const result = await getAllProductService(page, limit);
+        res.json({
+            success: true,
+            ...result
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+
+};
 
 // xóa sản phẩm
 
 // chi tiết sản phẩm
 
-export { addProduct, getCategories };
+export { addProduct, getCategories, getAllProduct };

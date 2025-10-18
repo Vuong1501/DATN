@@ -23,6 +23,35 @@ const uploadToCloudinary = (file) => {
     });
 };
 
+// Hàm chung để gọi rest và lấy cache danh mục
+const getCategoriesService = async () => {
+    const redis = getRedis();
+
+    // Đo thời gian bắt đầu
+    const start = Date.now();
+
+    // Kiểm tra cache
+    const cached = await redis.get("categories:all");
+    if (cached) {
+        const elapsed = Date.now() - start;
+        console.log(`⚡ Lấy danh mục từ Redis cache (${elapsed}ms)`);
+        return JSON.parse(cached);
+    }
+
+    // Gọi Category-service qua REST
+    console.log("🌐 Gọi Category-service qua REST...");
+    const response = await axios.get(`${CATEGORY_SERVICE_URL}/getAll`);
+
+    const categories = response.data;
+
+    // Lưu cache (1h)
+    await redis.set("categories:all", JSON.stringify(categories), { EX: 3600 });
+    // Đo thời gian chạy
+    const elapsed = Date.now() - start;
+    console.log(`⏱️ Lấy danh mục qua REST mất ${elapsed}ms`);
+    return categories;
+};
+
 const addProductService = async ({ name, description, price, category_id, sizes, bestseller }, images) => {
 
     // Chuẩn hóa dữ liệu
@@ -60,14 +89,11 @@ const addProductService = async ({ name, description, price, category_id, sizes,
             }
         }
         await transaction.commit();
-        const redis = getRedis();
-        const cachedCategories = await redis.get("categories:all");
-        let categoryName = null;
-        if (cachedCategories) {
-            const categories = JSON.parse(cachedCategories);
-            const found = categories.find(c => c.id === parseInt(category_id));
-            if (found) categoryName = found.name;
-        }
+
+        // Lấy danh mục từ cache (hoặc gọi REST nếu chưa có)
+        const categories = await getCategoriesService();
+        const found = categories.find(c => c.id === parseInt(category_id));
+        const categoryName = found ? found.name : null;
 
         const productWithRelations = await Product.findByPk(product.id, {
             attributes: ["id", "name", "description", "price", "bestSeller"],
@@ -92,35 +118,39 @@ const addProductService = async ({ name, description, price, category_id, sizes,
         }
         throw err;
     }
-
 };
 
-const getCategoriesService = async () => {
-    const redis = getRedis();
+const getAllProductService = async (page = 1, limit = 10) => {
+    const offset = (page - 1) * limit;
+    // Lấy danh sách sản phẩm
+    const count = await Product.count();
+    console.log("count>>>>", count);
 
-    // Đo thời gian bắt đầu
-    const start = Date.now();
+    const products = await Product.findAll({
+        include: [{ model: ProductImage, as: "images", attributes: ["url"] }],
+        order: [["createdAt", "DESC"]],
+        limit,
+        offset
+    });
 
-    // Kiểm tra cache
-    const cached = await redis.get("categories:all");
-    if (cached) {
-        const elapsed = Date.now() - start;
-        console.log(`⚡ Lấy danh mục từ Redis cache (${elapsed}ms)`);
-        return JSON.parse(cached);
-    }
+    // Lấy categories từ Redis hoặc rest
+    const categories = await getCategoriesService();
 
-    // Gọi Category-service qua REST
-    console.log("🌐 Gọi Category-service qua REST...");
-    const response = await axios.get(`${CATEGORY_SERVICE_URL}/getAll`);
+    // Map category name vào từng product
+    const productsWithCategory = products.map(p => {
+        const cat = categories.find(c => c.id === p.category_id);
+        return {
+            ...p.toJSON(),
+            categoryName: cat ? cat.name : null
+        };
+    });
 
-    const categories = response.data;
+    return {
+        total: count,
+        page,
+        limit,
+        products: productsWithCategory
+    };
+}
 
-    // Lưu cache (1h)
-    await redis.set("categories:all", JSON.stringify(categories), { EX: 3600 });
-    // Đo thời gian chạy
-    const elapsed = Date.now() - start;
-    console.log(`⏱️ Lấy danh mục qua REST mất ${elapsed}ms`);
-    return categories;
-};
-
-export { addProductService, getCategoriesService };
+export { addProductService, getCategoriesService, getAllProductService };
