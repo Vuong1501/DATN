@@ -60,10 +60,10 @@ xem các api đó cần authen không, hay là authen ở bên api gateway
 -----chiều cần giải thích các đoạn đã làm và xem nó có hợp lí không, có bất hợp lí và sai đâu không
 
 
--- mai xem phần phân trang vaflaays ra danh sách sản phẩm
-xem redis của lấy danh mục trong sản phẩm, đọc trong gpt và claude để hiểu
-xem xem làm cách lần đầu vào thêm danh mục thì mới có cache, nếu chưa vào thì bên lấy danh sách sản phẩm chưa có cache nên chưa lấy được tên danh mục 
 
+xem alij hiểu code lấy danh mục, luồng đi, kiểm tra quyền, apigateway
+
+-- bây giờ có những api cần đăng nhập + quyền admin thì mới vào và gọi được thì sử dụng api gateway như nào
 
 
 
