@@ -18,6 +18,6 @@ router.post("/auth/logout", logoutController);
 router.get("/auth/me", verifyAccessToken, getCurrentUserController);
 
 //admin
-router.post("/auth/admin/create", authAdmin, validateRegister, createAdminController);
+router.post("/auth/admin/create", validateRegister, createAdminController);
 
 export default router;

@@ -1,12 +1,22 @@
 import express from "express";
 import { proxyRequest } from "../utils/httpProxy.js";
+import { authMiddleware, adminMiddleware } from "../middleware/auth.js";
 import serviceUrls from "../config/serviceUrls.js";
 
 const router = express.Router();
 const userService = serviceUrls.user;
 
-router.post("/auth/register", proxyRequest(userService));
+
+// Router public
 router.post("/auth/login", proxyRequest(userService));
-router.get("/profile", proxyRequest(userService));
+router.post("/auth/register", proxyRequest(userService));
+
+// Router private
+router.post("/auth/refreshToken", proxyRequest(userService));
+router.post("/auth/logout", proxyRequest(userService));
+router.get("/auth/me", authMiddleware, proxyRequest(userService));
+
+// Router admin
+router.post("/auth/admin/create", authMiddleware, adminMiddleware, proxyRequest(userService));
 
 export default router;

@@ -65,5 +65,18 @@ xem alij hiểu code lấy danh mục, luồng đi, kiểm tra quyền, apigatew
 
 -- bây giờ có những api cần đăng nhập + quyền admin thì mới vào và gọi được thì sử dụng api gateway như nào
 
+bây giờ đã xong luồng api-gate, tiếp theo làm cần quyền đăng nhập hoặc admin, nhớ test đủ các quyền bằng cách đăng nhập tài khoản user và admin
+chốt tạo jwt ở user-service, chia sẻ khóa bí mật cho cả api-gateway để mỗi khi có requets đi qua nó sẽ kiểm tra(cần trùng khóa bí mật giữa user-service và gateway)
 
 
+⚙️ 2. Có thể thêm một số API gợi ý nếu bạn muốn hệ thống hoàn chỉnh hơn:
+API	Loại	Mục đích
+PUT /auth/update-profile	Private	Cho phép user cập nhật thông tin cá nhân (tên, avatar, v.v.)
+PUT /auth/change-password	Private	Đổi mật khẩu khi đang đăng nhập
+POST /auth/forgot-password	Public	Gửi email khôi phục mật khẩu
+POST /auth/reset-password	Public	Đặt lại mật khẩu sau khi xác minh qua email
+GET /auth/users	Admin	Lấy danh sách user (phân trang, tìm kiếm)
+DELETE /auth/admin/delete/:id	Admin	Xóa người dùng khác
+PATCH /auth/admin/ban/:id	Admin	Khóa tài khoản người dùng vi phạm
+
+bây giờ đang xem bên fe gửi token sang bên be để xác thực như nào, kèm theo mỗi request hay tạo hàm chung

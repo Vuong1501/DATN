@@ -3,6 +3,7 @@ import { loginUser, refreshAccessToken, logoutUser } from "../services/authServi
 import { getUserProfile } from "../services/userService.js";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { setAccessToken as setAxiosToken } from "../apiConfig/axiosClient";
 
 export const AuthContext = createContext(); //tạo ra context rỗng 
 
@@ -18,6 +19,7 @@ const AuthProvider = (props) => {
             try {
                 const data = await refreshAccessToken();
                 setAccessToken(data.accessToken);
+                setAxiosToken(data.accessToken); // Cập nhật token cho axiosClient
 
                 const userData = await getUserProfile(data.accessToken);
                 setUser(userData);
@@ -40,8 +42,9 @@ const AuthProvider = (props) => {
                 return;
             };
             setAccessToken(dataUser.accessToken);
+            setAxiosToken(dataUser.accessToken); // Cập nhật token cho axiosClient
             // gọi hàm getUserProfile để nhận thông tin use sau khi login
-            const user = await getUserProfile(dataUser.accessToken);
+            const user = await getUserProfile();
             setUser(user);
 
             toast.success("Đăng nhập thành công");
@@ -56,6 +59,7 @@ const AuthProvider = (props) => {
             await logoutUser();
             setAccessToken(null);
             setUser(null);
+            setAxiosToken(null);
             toast.success("Đã đăng xuất");
             navigate("/login");
         } catch (error) {
@@ -65,6 +69,7 @@ const AuthProvider = (props) => {
     const authData = ({ accessToken, user }) => {
         setAccessToken(accessToken);
         setUser(user);
+        setAxiosToken(accessToken);
     };
 
 

@@ -76,7 +76,7 @@ const Login = () => {
             </div>
             <button className="bg-black text-white font-light px-8 py-2 mt-4">{currentState === 'Login' ? 'Sign In' : 'Sign Up'}</button>
             <button
-                onClick={() => window.location.href = "http://localhost:3001/users/auth/google"}
+                onClick={() => window.location.href = "http://localhost:8080/api/users/auth/google"}
                 type="button"
                 className="bg-black text-white font-light px-8 py-2 mt-4 flex items-center justify-center gap-2 border border-gray-500">
                 <img src={assets.logo_gg} alt="Google" className="w-5 h-5" />
