@@ -79,4 +79,4 @@ GET /auth/users	Admin	Lấy danh sách user (phân trang, tìm kiếm)
 DELETE /auth/admin/delete/:id	Admin	Xóa người dùng khác
 PATCH /auth/admin/ban/:id	Admin	Khóa tài khoản người dùng vi phạm
 
-bây giờ đang xem bên fe gửi token sang bên be để xác thực như nào, kèm theo mỗi request hay tạo hàm chung
+tạo interceptor bên admin

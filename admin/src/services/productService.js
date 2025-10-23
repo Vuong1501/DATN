@@ -1,6 +1,7 @@
+import axiosAdmin from "../apiConfig/axiosAdmin";
 import axios from "axios";
 
-const API_URL_PRODUCT = "http://localhost:3002/product";
+const API_URL_PRODUCT = "http://localhost:8080/api/product";
 
 const getCategory = async () => {
     const res = await axios.get(`${API_URL_PRODUCT}/getCategory`);
@@ -9,9 +10,7 @@ const getCategory = async () => {
 
 const addProduct = async (formData) => {
     try {
-        const res = await axios.post(`${API_URL_PRODUCT}/add`, formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-        });
+        const res = await axiosAdmin.post("/add", formData);
         return res.data;
     } catch (error) {
         if (error.response && error.response.data) {

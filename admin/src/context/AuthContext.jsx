@@ -2,6 +2,7 @@ import { createContext, useState, useEffect } from "react";
 import { loginAdmin, refreshAccessToken, getAdminProfile, logoutUser } from "../services/authService";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { setAdminToken } from "../apiConfig/axiosAdmin";
 
 export const AuthContextAdmin = createContext(); //tạo ra context rỗng 
 
@@ -16,6 +17,7 @@ const AuthProviderAdmin = (props) => {
             try {
                 const data = await refreshAccessToken();
                 setAccessToken(data.accessToken);
+                setAdminToken(data.accessToken);
 
                 const adminData = await getAdminProfile(data.accessToken);
                 setAdmin(adminData);
@@ -40,6 +42,7 @@ const AuthProviderAdmin = (props) => {
             };
 
             setAccessToken(data.accessToken);
+            setAdminToken(data.accessToken);
             const adminData = await getAdminProfile(data.accessToken);
             setAdmin(adminData);
 
@@ -54,6 +57,7 @@ const AuthProviderAdmin = (props) => {
             await logoutUser();
             setAccessToken(null);
             setAdmin(null);
+            setAdminToken(null);
             toast.success("Đã đăng xuất");
             navigate("/admin/login");
         } catch (error) {

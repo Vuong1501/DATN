@@ -9,8 +9,12 @@ const productService = serviceUrls.product;
 
 router.get("/getAllProduct", proxyRequest(productService)); // public
 router.get("/:id", proxyRequest(productService)); // public
-router.post("/", authMiddleware, adminMiddleware, proxyRequest(productService)); // admin
-router.put("/:id", authMiddleware, adminMiddleware, proxyRequest(productService)); // admin
-router.delete("/:id", authMiddleware, adminMiddleware, proxyRequest(productService)); // admin
+
+router.get("/getCategory", proxyRequest(productService));
+router.post("/add", authMiddleware, adminMiddleware, proxyRequest(productService));
+
+// router.post("/", authMiddleware, adminMiddleware, proxyRequest(productService)); // admin
+// router.put("/:id", authMiddleware, adminMiddleware, proxyRequest(productService)); // admin
+// router.delete("/:id", authMiddleware, adminMiddleware, proxyRequest(productService)); // admin
 
 export default router;
