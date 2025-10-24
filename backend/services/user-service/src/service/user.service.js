@@ -5,7 +5,9 @@ import { google } from "googleapis";
 import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 
+const EXCHANGE = "notification_exchange";
 
 const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
@@ -223,8 +225,83 @@ const getCurrentUserService = async (userId) => {
     };
 };
 
+const forgotPasswordService = async (email) => {
+    try {
+        const user = await User.findOne({ where: { email } });
+        if (!user) throw new Error("Email không tồn tại");
+        //Tạo token reset password
+        const token = crypto.randomBytes(20).toString("hex");
+        // Lưu token vào redis
+
+        const redis = getRedis();
+        await redis.set(`resetToken:${token}`, user.id.toString(), { EX: 900 });
+        // // Lấy TTL ban đầu
+        // let ttl = await redis.ttl(`resetToken:${token}`);
+        // console.log(`Token đã lưu: resetToken:${token}`);
+        // console.log(`UserID: ${user.id}`);
+        // console.log(`TTL ban đầu: ${ttl}s`);
+
+        // //Log TTL mỗi 5 giây để xem Redis đếm ngược
+        // const interval = setInterval(async () => {
+        //     const ttlNow = await redis.ttl(`resetToken:${token}`);
+
+        //     if (ttlNow === -2) {
+        //         console.log("Token đã hết hạn và bị xóa khỏi Redis!");
+        //         clearInterval(interval);
+        //     } else {
+        //         console.log(`TTL còn lại: ${ttlNow}s`);
+        //     }
+        // }, 5000); // mỗi 5 giây log một lần
+
+        // gửi token qua rabbitmq
+        const channel = getChannel();
+        await channel.assertExchange(EXCHANGE, "direct", { durable: true });
+
+        const message = {
+            type: "forgot_password",
+            to: user.email,
+            subject: "Yêu cầu đặt lại mật khẩu",
+            html: `
+                <p>Bạn đã yêu cầu đặt lại mật khẩu. Nhấn vào link bên dưới để đặt lại:</p>
+                <a href="http://localhost:5173/reset-password/${token}">Đặt lại mật khẩu</a>
+                <p>Link có hiệu lực trong 15 phút.</p>
+            `
+        };
+        // publish theo routing key "forgot_password"
+        channel.publish(
+            EXCHANGE,
+            "forgot_password",
+            Buffer.from(JSON.stringify(message)),
+            { persistent: true }
+        );
+
+        console.log(`[UserService] Sent forgot password mail to: ${user.email}`);
+
+        return { message: "Đã gửi email đặt lại mật khẩu" };
+    } catch (error) {
+        throw error;
+    }
+};
+
+const resetPasswordService = async (token, newPassword) => {
+    const redis = getRedis();
+    const userId = await redis.get(`resetToken:${token}`);
+    if (!userId) throw new Error("Token không hợp lệ hoặc đã hết hạn");
+
+    const user = await User.findByPk(userId);
+    if (!user) throw new Error("Người dùng không tồn tại");
+
+    user.password = newPassword; // có thể hash nếu bạn muốn
+    await user.save();
+
+    // Xóa token khỏi Redis sau khi dùng
+    await redis.del(`resetToken:${token}`);
+
+    return { message: "Đặt lại mật khẩu thành công" };
+};
+
 export {
     getGoogleAuthURL, loginWithGoogle, refreshAccessToken,
     registerService, loginService, createAdminService, logoutService,
-    getCurrentUserService
+    getCurrentUserService, forgotPasswordService, resetPasswordService
 };

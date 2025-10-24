@@ -1,7 +1,7 @@
 import {
     getGoogleAuthURL, loginWithGoogle, refreshAccessToken,
     registerService, loginService, createAdminService, logoutService,
-    getCurrentUserService
+    getCurrentUserService, forgotPasswordService, resetPasswordService
 } from "../service/user.service.js";
 
 const googleLogin = (req, res) => {
@@ -104,12 +104,33 @@ const getCurrentUserController = async (req, res) => {
         return res.status(200).json({ user });
     } catch (error) {
         return res.status(400).json({ error: error.message });
+    };
+};
+
+const forgotPasswordController = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const result = await forgotPasswordService(email);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
     }
-}
+};
+
+const resetPasswordController = async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+        const result = await userService.resetPassword(token, newPassword);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
 
 
 export {
     googleLogin, googleCallback, refreshTokenController,
     registerUserController, loginController, createAdminController,
-    logoutController, getCurrentUserController
+    logoutController, getCurrentUserController, forgotPasswordController,
+    resetPasswordController
 };

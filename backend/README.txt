@@ -80,3 +80,57 @@ DELETE /auth/admin/delete/:id	Admin	Xóa người dùng khác
 PATCH /auth/admin/ban/:id	Admin	Khóa tài khoản người dùng vi phạm
 
 tạo interceptor bên admin
+
+-user-service 
+-- Client
+đăng kí (xong)
+đăng nhập (xong)
+refreshToken (xong)
+logout (xong)
+quên mật khẩu
+lấy thông tin cá nhân (xong)
+cập nhật thông tin
+
+
+-- khi đến đoạn gửi mail thì cần nhớ 
+🧩 1. Cấu trúc message gửi vào queue
+
+Khi một service khác (ví dụ order-service hay user-service) muốn gửi mail,
+nó chỉ cần gửi message có dạng chung này:
+
+{
+  type: "forgot_password", // hoặc "order_success", "order_cancel"
+  to: "user@gmail.com",
+  subject: "Đặt lại mật khẩu",
+  html: "<p>Nhấn vào link này để đặt lại mật khẩu...</p>"
+}
+Ví dụ cụ thể trong từng trường hợp:
+
+🔹 Quên mật khẩu
+await channel.sendToQueue("email_queue", Buffer.from(JSON.stringify({
+  type: "forgot_password",
+  to: user.email,
+  subject: "Quên mật khẩu",
+  html: `<p>Bấm vào link này để đặt lại mật khẩu: ${resetLink}</p>`
+})));
+
+
+khi người dùng đặt hàng -> redis trừ tồn kho(<0 thì báo hết hàng) => khi redis xác nhận còn hàng
+=> đưa message vào queue rabbit => xử lí dần  => order-service lắng nghe order_queue
+=> cập nhật DB => và gửi mail cho khách
+🧩 Tóm tắt flow cuối cùng (chuẩn nhất để demo flash sale):
+graph TD
+A[User click Mua ngay] --> B[API Gateway / Order Controller]
+B --> C[Redis check stock]
+C -->|Còn hàng| D[Push vào RabbitMQ: order_queue]
+C -->|Hết hàng| H[Socket emit 'fail']
+
+D --> E[OrderService consumer xử lý đơn hàng]
+E -->|OK| F[Emit socket 'success']
+E -->|OK| G[Publish 'order.created' → email_queue]
+E -->|Fail| H[Emit socket 'fail']
+
+G --> I[NotificationService consumer gửi mail xác nhận]
+
+chiều xem  quên mật khẩu rabbit
+

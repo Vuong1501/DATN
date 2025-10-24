@@ -10,6 +10,8 @@ const userService = serviceUrls.user;
 // Router public
 router.post("/auth/login", proxyRequest(userService));
 router.post("/auth/register", proxyRequest(userService));
+router.post("/auth/forgotPassword", proxyRequest(userService));
+router.post("/auth/resetPassword", proxyRequest(userService));
 
 // Router private
 router.post("/auth/refreshToken", proxyRequest(userService));

@@ -81,6 +81,20 @@ services:
       - rabbitmq
     networks:
       - mynet
+
+  notification-service:
+    build:
+      context: ./services/notification-service
+      target: prod
+    ports:
+      - "3004:3004"
+    env_file:
+      - ./services/notification-service/.env
+    depends_on:
+      - redis
+      - rabbitmq
+    networks:
+      - mynet
 networks:
   mynet:
     driver: bridge

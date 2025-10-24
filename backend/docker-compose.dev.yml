@@ -47,3 +47,16 @@ services:
       - "3003:3003"
     environment:
       NODE_ENV: development
+
+  notification-service:
+    build:
+      context: ./services/notification-service
+      target: dev
+    volumes:
+      - ./services/notification-service/src:/app/src
+      - ./common:/app/common
+    command: npm run dev
+    ports:
+      - "3004:3004"
+    environment:
+      NODE_ENV: development

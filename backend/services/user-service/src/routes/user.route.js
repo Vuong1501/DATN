@@ -1,11 +1,10 @@
 import express from "express";
 import {
     googleLogin, googleCallback, refreshTokenController, registerUserController,
-    loginController, createAdminController, logoutController, getCurrentUserController
+    loginController, createAdminController, logoutController, getCurrentUserController,
+    forgotPasswordController, resetPasswordController
 } from "../controllers/user.controller.js";
 import { validateRegister, validateLogin } from "../validate/user.validate.js";
-import { authAdmin } from "../middleware/authAdmin.js";
-import { verifyAccessToken } from "../middleware/verifyAccessToken.js";
 
 const router = express.Router();
 
@@ -15,7 +14,9 @@ router.post("/auth/refreshToken", refreshTokenController);
 router.post("/auth/register", validateRegister, registerUserController);
 router.post("/auth/login", validateLogin, loginController);
 router.post("/auth/logout", logoutController);
-router.get("/auth/me", verifyAccessToken, getCurrentUserController);
+router.get("/auth/me", getCurrentUserController);
+router.post("/auth/forgotPassword", forgotPasswordController);
+router.post("/auth/resetPassword", resetPasswordController);
 
 //admin
 router.post("/auth/admin/create", validateRegister, createAdminController);
