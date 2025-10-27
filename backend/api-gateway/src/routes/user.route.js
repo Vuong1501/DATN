@@ -12,6 +12,7 @@ router.post("/auth/login", proxyRequest(userService));
 router.post("/auth/register", proxyRequest(userService));
 router.post("/auth/forgotPassword", proxyRequest(userService));
 router.post("/auth/resetPassword", proxyRequest(userService));
+router.get("/auth/google", proxyRequest(userService));
 
 // Router private
 router.post("/auth/refreshToken", proxyRequest(userService));

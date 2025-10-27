@@ -102,7 +102,6 @@ const logoutController = async (req, res) => {
 const getCurrentUserController = async (req, res) => {
     try {
         const userId = req.headers['x-user-id'];
-        console.log("userId", userId);
 
         const user = await getCurrentUserService(userId);
 
