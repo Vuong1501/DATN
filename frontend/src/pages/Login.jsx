@@ -66,7 +66,10 @@ const Login = () => {
                 onChange={e => setPassword(e.target.value)}
             />
             <div className="w-full flex justify-between text-sm mt-[-8px]">
-                <p className=" cursor-pointer">Forgot your password?</p>
+                <p
+                    className=" cursor-pointer hover:underline"
+                    onClick={() => navigate("/forgot-password")}
+                >Forgot your password?</p>
                 {
                     currentState === 'Login'
                         ? <p onClick={() => setCurrentState('Sign Up')} className=" cursor-pointer">Create account</p>

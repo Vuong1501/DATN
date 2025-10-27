@@ -93,7 +93,7 @@ refreshToken (xong)
 logout (xong)
 quên mật khẩu (xong)
 lấy thông tin cá nhân (xong)
-cập nhật thông tin
+cập nhật thông tin 
 
 
 -- khi đến đoạn gửi mail thì cần nhớ 

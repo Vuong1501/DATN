@@ -268,17 +268,6 @@ const forgotPasswordService = async (email) => {
             `
         };
 
-        // đoạn test
-        //     const message = {
-        //         type: "forgot_password",
-        //         to: "failtest@example.com", // 👈 ép lỗi để test retry
-        //         subject: "Test Retry Flow",
-        //         html: `
-        //     <p>Đây là email test retry flow.</p>
-        //     <p>Không gửi được mail này sẽ vào retry queue.</p>
-        // `,
-        //     };
-
         // publish theo routing key "forgot_password"
         channel.publish(
             EXCHANGE,

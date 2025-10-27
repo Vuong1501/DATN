@@ -21,4 +21,9 @@ const logoutUser = () => {
     return axios.post(`${API_URL}/logout`, {}, { withCredentials: true });
 };
 
-export { loginUser, refreshAccessToken, logoutUser, registerUser };
+const forgotPassword = async (data) => {
+    const res = await axios.post(`${API_URL}/forgotPassword`, data);
+    return res.data;
+}
+
+export { loginUser, refreshAccessToken, logoutUser, registerUser, forgotPassword };
