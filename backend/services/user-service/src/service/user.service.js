@@ -267,6 +267,18 @@ const forgotPasswordService = async (email) => {
                 <p>Link có hiệu lực trong 15 phút.</p>
             `
         };
+
+        // đoạn test
+        //     const message = {
+        //         type: "forgot_password",
+        //         to: "failtest@example.com", // 👈 ép lỗi để test retry
+        //         subject: "Test Retry Flow",
+        //         html: `
+        //     <p>Đây là email test retry flow.</p>
+        //     <p>Không gửi được mail này sẽ vào retry queue.</p>
+        // `,
+        //     };
+
         // publish theo routing key "forgot_password"
         channel.publish(
             EXCHANGE,
@@ -290,8 +302,9 @@ const resetPasswordService = async (token, newPassword) => {
 
     const user = await User.findByPk(userId);
     if (!user) throw new Error("Người dùng không tồn tại");
+    const hashPassword = await bcrypt.hash(newPassword, 10)
 
-    user.password = newPassword; // có thể hash nếu bạn muốn
+    user.password = hashPassword;
     await user.save();
 
     // Xóa token khỏi Redis sau khi dùng

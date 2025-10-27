@@ -15,6 +15,10 @@ npm install --save-dev nodemon
 ----- SHOW TABLES;
 ----- SELECT * FROM users;
 
+-- lệnh kiểm tra redis
+---- docker exec -it ( thay bằn id của redis trong docker) redis-cli
+---- keys * để xem các key
+
 
 -- lệnh log 1 service nào đó
 ----- docker-compose logs -f product-service
@@ -87,7 +91,7 @@ tạo interceptor bên admin
 đăng nhập (xong)
 refreshToken (xong)
 logout (xong)
-quên mật khẩu
+quên mật khẩu (xong)
 lấy thông tin cá nhân (xong)
 cập nhật thông tin
 
@@ -132,5 +136,7 @@ E -->|Fail| H[Emit socket 'fail']
 
 G --> I[NotificationService consumer gửi mail xác nhận]
 
-chiều xem  quên mật khẩu rabbit
+
+-- KHI NÀO LÀM ĐẾN ĐOẠN ORDER_SUCCESS THÌ XEM FILE NOTIFICATION.CONSUMER.JS
+
 

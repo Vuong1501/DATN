@@ -4,6 +4,8 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const sendMail = async (to, subject, html) => {
+
+    // throw new Error("Fake sendMail error to test retry");
     const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
