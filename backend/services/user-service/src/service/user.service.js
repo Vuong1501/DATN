@@ -290,6 +290,7 @@ const resetPasswordService = async (token, newPassword) => {
     if (!userId) throw new Error("Token không hợp lệ hoặc đã hết hạn");
 
     const user = await User.findByPk(userId);
+
     if (!user) throw new Error("Người dùng không tồn tại");
     const hashPassword = await bcrypt.hash(newPassword, 10)
 

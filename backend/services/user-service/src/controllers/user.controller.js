@@ -1,3 +1,4 @@
+import e from "express";
 import {
     getGoogleAuthURL, loginWithGoogle, refreshAccessToken,
     registerService, loginService, createAdminService, logoutService,
@@ -70,6 +71,8 @@ const loginController = async (req, res) => {
             role
         });
     } catch (error) {
+        console.log("đăng nhập lỗi ", error);
+
         res.status(400).json({ error: error.message });
     }
 };
@@ -98,7 +101,9 @@ const logoutController = async (req, res) => {
 
 const getCurrentUserController = async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = req.headers['x-user-id'];
+        console.log("userId", userId);
+
         const user = await getCurrentUserService(userId);
 
         return res.status(200).json({ user });
@@ -120,9 +125,14 @@ const forgotPasswordController = async (req, res) => {
 const resetPasswordController = async (req, res) => {
     try {
         const { token, newPassword } = req.body;
-        const result = await userService.resetPassword(token, newPassword);
+        console.log("token be", token);
+        console.log("newPassword be", newPassword);
+
+        const result = await resetPasswordService(token, newPassword);
         res.status(200).json(result);
     } catch (error) {
+        console.log("lỗi ở đây", error);
+
         res.status(400).json({ message: error.message });
     }
 };

@@ -72,8 +72,8 @@ const Login = () => {
                 >Forgot your password?</p>
                 {
                     currentState === 'Login'
-                        ? <p onClick={() => setCurrentState('Sign Up')} className=" cursor-pointer">Create account</p>
-                        : <p onClick={() => setCurrentState('Login')} className=" cursor-pointer">Login Here</p>
+                        ? <p onClick={() => setCurrentState('Sign Up')} className=" cursor-pointer hover:underline">Create account</p>
+                        : <p onClick={() => setCurrentState('Login')} className=" cursor-pointer hover:underline">Login Here</p>
                 }
 
             </div>

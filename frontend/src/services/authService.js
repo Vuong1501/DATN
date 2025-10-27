@@ -24,6 +24,11 @@ const logoutUser = () => {
 const forgotPassword = async (data) => {
     const res = await axios.post(`${API_URL}/forgotPassword`, data);
     return res.data;
-}
+};
 
-export { loginUser, refreshAccessToken, logoutUser, registerUser, forgotPassword };
+const resetPassword = async (data) => {
+    const res = await axios.post(`${API_URL}/resetPassword`, data);
+    return res.data;
+};
+
+export { loginUser, refreshAccessToken, logoutUser, registerUser, forgotPassword, resetPassword };
