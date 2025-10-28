@@ -1,8 +1,9 @@
-import e from "express";
+
 import {
     getGoogleAuthURL, loginWithGoogle, refreshAccessToken,
     registerService, loginService, createAdminService, logoutService,
-    getCurrentUserService, forgotPasswordService, resetPasswordService
+    getCurrentUserService, forgotPasswordService, resetPasswordService,
+    usersService
 } from "../service/user.service.js";
 
 const googleLogin = (req, res) => {
@@ -136,10 +137,25 @@ const resetPasswordController = async (req, res) => {
     }
 };
 
+const usersController = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const result = await usersService(page, limit);
+        res.json({
+            success: true,
+            ...result
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    };
+};
+
 
 export {
     googleLogin, googleCallback, refreshTokenController,
     registerUserController, loginController, createAdminController,
     logoutController, getCurrentUserController, forgotPasswordController,
-    resetPasswordController
+    resetPasswordController, usersController
 };

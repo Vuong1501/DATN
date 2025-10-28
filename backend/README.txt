@@ -83,7 +83,6 @@ GET /auth/users	Admin	Lấy danh sách user (phân trang, tìm kiếm)
 DELETE /auth/admin/delete/:id	Admin	Xóa người dùng khác
 PATCH /auth/admin/ban/:id	Admin	Khóa tài khoản người dùng vi phạm
 
-tạo interceptor bên admin
 
 -user-service 
 -- Client
@@ -93,7 +92,8 @@ refreshToken (xong)
 logout (xong)
 quên mật khẩu (xong)
 lấy thông tin cá nhân (xong)
-cập nhật thông tin 
+-- admin
+lấy danh sách người dùng
 
 
 -- khi đến đoạn gửi mail thì cần nhớ 
@@ -138,5 +138,8 @@ G --> I[NotificationService consumer gửi mail xác nhận]
 
 
 -- KHI NÀO LÀM ĐẾN ĐOẠN ORDER_SUCCESS THÌ XEM FILE NOTIFICATION.CONSUMER.JS
+
+
+mai làm phần cập nhật thông tin user
 
 

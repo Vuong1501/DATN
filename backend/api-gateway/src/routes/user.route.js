@@ -21,5 +21,6 @@ router.get("/auth/me", authMiddleware, proxyRequest(userService));
 
 // Router admin
 router.post("/auth/admin/create", authMiddleware, adminMiddleware, proxyRequest(userService));
+router.get("/auth/admin/users", authMiddleware, adminMiddleware, proxyRequest(userService));
 
 export default router;

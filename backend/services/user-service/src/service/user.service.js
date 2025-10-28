@@ -303,8 +303,34 @@ const resetPasswordService = async (token, newPassword) => {
     return { message: "Đặt lại mật khẩu thành công" };
 };
 
+const usersService = async (page = 1, limit = 10) => {
+    const offset = (page - 1) * limit;
+    const count = await User.count({
+        where: { role: "user" }
+    });
+
+    const users = await User.findAll({
+        where: { role: "user" },
+        attributes: ["username", "email"],
+        order: [["createdAt", "DESC"]],
+        limit,
+        offset
+    });
+
+    const totalPage = Math.ceil(count / limit);
+
+    return {
+        total: count,
+        totalPage,
+        page,
+        limit,
+        users
+    };
+};
+
 export {
     getGoogleAuthURL, loginWithGoogle, refreshAccessToken,
     registerService, loginService, createAdminService, logoutService,
-    getCurrentUserService, forgotPasswordService, resetPasswordService
+    getCurrentUserService, forgotPasswordService, resetPasswordService,
+    usersService
 };

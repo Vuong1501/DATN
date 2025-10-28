@@ -2,7 +2,7 @@ import express from "express";
 import {
     googleLogin, googleCallback, refreshTokenController, registerUserController,
     loginController, createAdminController, logoutController, getCurrentUserController,
-    forgotPasswordController, resetPasswordController
+    forgotPasswordController, resetPasswordController, usersController
 } from "../controllers/user.controller.js";
 import { validateRegister, validateLogin } from "../validate/user.validate.js";
 
@@ -20,5 +20,6 @@ router.post("/auth/resetPassword", resetPasswordController);
 
 //admin
 router.post("/auth/admin/create", validateRegister, createAdminController);
+router.get("/auth/admin/users", usersController);
 
 export default router;
