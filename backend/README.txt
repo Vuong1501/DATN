@@ -8,7 +8,7 @@ npm install --save-dev nodemon
 ---- lệnh chạy PROD: docker-compose -f docker-compose.yml up --build -d (bỏ -d để thấy terminal đang chạy)
 
 -- chạy code ở folder backend
-
+root
 -- lệnh kiểm tra bảng csdl
 ----- docker exec -it mysql_container mysql -u root -p mydb(thay mydb thành db mà service đang sử dụng)
 ----- USE user_db;
@@ -33,56 +33,17 @@ docker exec -it <container_id> env | grep GOOGLE_CLIENT_SECRET
 
 
 -- DEMO 1 triệu người cùng mua 1 sản phẩm, tắt 1 service thì service khác vẫn hoạt động bình thường(xem trong chat gpt)
------------------- Hiện tại chưa làm trang admin, định là client và admin cùng đăng nhập 1 form login, nếu admin sẽ có thêm nút
-admin panel sau login, ấn vào sẽ sang trang admin(xem chat gpt LÚC NÀO LÀM TRANG ADMIN THÌ XEM)
-
-
-
--- TÍNH NĂNG
---- ĐĂNG KÍ
----- Ở màn hình đăng nhập hiển thị nút đăng nhập bằng gg hoặc nút đăng kí, nếu ấn nút đăng kí thì chuyển sang form đăng kí, nếu đăng kí bình thường thì khi đăng kí xong cần điền tài
-khoản, mật khẩu để đăng nhập, và bên form đăng kí cũng có đăng kí bằng gg, sau khi xác nhận thì sẽ cho đăng nhâp luôn
-
 
 Client secret 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
 Client ID 852218064853-7aog4t8ibs7gfio6rs4vs3fo1ve5jqlg.apps.googleusercontent.com
 
 Trong e-commerce, quan trọng nhất là tính nhất quán dữ liệu (đơn hàng – thanh toán – tồn kho) và khả năng chịu tải cao khi traffic đột biến (sale, flash sale).
-Ứng dụng thêm api-gateway(xem đoạn chat LÚC NÀO LÀM API-GATEWAY thì xem)
-
-đang phân vân xem đoạn upload ảnh lên cloudinary thì dùng cách nào 
-
 
 tách StockService, categoryService(Gom chung Category + SubCategory vào cùng một service) xem chat gpt đoạn CATEGORY - SERVICE - TỒN KHO
 
 product-service gọi sang categoryService bằng rabbitMQ
 
 -- xem phần validate trước khi tạo sản phẩm mới
-
-KHI làm đến đoạn tính nhất quán giữa các service thì xem đoạn chatgpt(KHI LÀM TÍNH NHẤT QUÁN)
-xem các api đó cần authen không, hay là authen ở bên api gateway
------chiều cần giải thích các đoạn đã làm và xem nó có hợp lí không, có bất hợp lí và sai đâu không
-
-
-
-xem alij hiểu code lấy danh mục, luồng đi, kiểm tra quyền, apigateway
-
--- bây giờ có những api cần đăng nhập + quyền admin thì mới vào và gọi được thì sử dụng api gateway như nào
-
-bây giờ đã xong luồng api-gate, tiếp theo làm cần quyền đăng nhập hoặc admin, nhớ test đủ các quyền bằng cách đăng nhập tài khoản user và admin
-chốt tạo jwt ở user-service, chia sẻ khóa bí mật cho cả api-gateway để mỗi khi có requets đi qua nó sẽ kiểm tra(cần trùng khóa bí mật giữa user-service và gateway)
-
-
-⚙️ 2. Có thể thêm một số API gợi ý nếu bạn muốn hệ thống hoàn chỉnh hơn:
-API	Loại	Mục đích
-PUT /auth/update-profile	Private	Cho phép user cập nhật thông tin cá nhân (tên, avatar, v.v.)
-PUT /auth/change-password	Private	Đổi mật khẩu khi đang đăng nhập
-POST /auth/forgot-password	Public	Gửi email khôi phục mật khẩu
-POST /auth/reset-password	Public	Đặt lại mật khẩu sau khi xác minh qua email
-GET /auth/users	Admin	Lấy danh sách user (phân trang, tìm kiếm)
-DELETE /auth/admin/delete/:id	Admin	Xóa người dùng khác
-PATCH /auth/admin/ban/:id	Admin	Khóa tài khoản người dùng vi phạm
-
 
 -user-service 
 -- Client
@@ -93,7 +54,9 @@ logout (xong)
 quên mật khẩu (xong)
 lấy thông tin cá nhân (xong)
 -- admin
-lấy danh sách người dùng
+lấy danh sách người dùng(xong)
+
+-product-service
 
 
 -- khi đến đoạn gửi mail thì cần nhớ 
@@ -139,7 +102,9 @@ G --> I[NotificationService consumer gửi mail xác nhận]
 
 -- KHI NÀO LÀM ĐẾN ĐOẠN ORDER_SUCCESS THÌ XEM FILE NOTIFICATION.CONSUMER.JS
 
+-----------------------------------------------------------------RABBITMQ--------------------------------------------------------------------------------
+- Hiện tại bên categoryService đang publish sự kiện thêm, xóa danh mục sang bên product(product đang nhận)
+- bên user-service đang publish sự kiện gửi mail sang cho NotificationService (đang có sẵn mail order_success)
 
-mai làm phần cập nhật thông tin user
 
 

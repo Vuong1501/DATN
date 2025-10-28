@@ -95,6 +95,20 @@ services:
       - rabbitmq
     networks:
       - mynet
+
+  inventory-service:
+    build:
+      context: ./services/inventory-service
+      target: prod
+    ports:
+      - "3005:3005"
+    env_file:
+      - ./services/inventory-service/.env
+    depends_on:
+      - redis
+      - rabbitmq
+    networks:
+      - mynet
 networks:
   mynet:
     driver: bridge

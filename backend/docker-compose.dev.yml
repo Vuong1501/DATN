@@ -60,3 +60,16 @@ services:
       - "3004:3004"
     environment:
       NODE_ENV: development
+
+  inventory-service:
+    build:
+      context: ./services/inventory-service
+      target: dev
+    volumes:
+      - ./services/inventory-service/src:/app/src
+      - ./common:/app/common
+    command: npm run dev
+    ports:
+      - "3005:3005"
+    environment:
+      NODE_ENV: development
