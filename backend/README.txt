@@ -106,5 +106,11 @@ G --> I[NotificationService consumer gửi mail xác nhận]
 - Hiện tại bên categoryService đang publish sự kiện thêm, xóa danh mục sang bên product(product đang nhận)
 - bên user-service đang publish sự kiện gửi mail sang cho NotificationService (đang có sẵn mail order_success)
 
+tức là khi thêm sản phẩm thì product publish sang inventory
+còn khi lấy sản phẩm thì product gọi sang inventory để lấy thông tin tồn kho(có thể thêm redis như bên category)
 
+
+khi thêm sản phẩm + size => publish sự kiện sang inventory => inventory cache(khi thay đổi tồn kho cũng sẽ cache lại)
+khi thêm sản phẩm mới thì chỉ publish sang inventory để stock của size đó bằng 0, phải có 1 trang để
+gọi api bên inventory-service để thêm tồn kho
 

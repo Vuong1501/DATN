@@ -1,5 +1,6 @@
 import { Product, ProductImage, ProductSize } from "../models/index.js";
 import { getRedis } from "../../common/redis/redis.js";
+import { getChannel } from "../../common/rabbitmq/rabbitmq.js";
 import cloudinary from "../config/cloudinary.js";
 import sequelize from "../config/db.js";
 import axios from "axios";
@@ -89,6 +90,23 @@ const addProductService = async ({ name, description, price, category_id, sizes,
             }
         }
         await transaction.commit();
+
+        // publish event tạo tồn kho sang inventory-service
+        const channel = getChannel();
+        const productSizes = await ProductSize.findAll({
+            where: { productId: product.id },
+            attributes: ['id', 'size']
+        });
+        const eventPayload = {
+            productId: product.id,
+            name,
+            sizes: productSizes.map(s => ({
+                id: s.id,
+                size: s.size
+            }))
+        };
+        await channel.publish("product_exchange", "product.created", Buffer.from(JSON.stringify(eventPayload)));
+        console.log("📤 Published event: product.created", eventPayload);
 
         // Lấy danh mục từ cache (hoặc gọi REST nếu chưa có)
         const categories = await getCategoriesService();
