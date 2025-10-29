@@ -1,4 +1,4 @@
-import { updateInventoryService } from "../services/inventory.service.js";
+import { updateInventoryService, updateInventoryManyService } from "../services/inventory.service.js";
 
 const updateInventoryController = async (req, res) => {
     try {
@@ -11,8 +11,35 @@ const updateInventoryController = async (req, res) => {
         });
     } catch (error) {
         res.status(400).json({ success: false, message: error.message });
-    }
-
+    };
 };
 
-export { updateInventoryController };
+const updateInventoryManyController = async (req, res) => {
+    try {
+        const { inventories } = req.body; // [{ productSizeId, stock }, ...]
+        console.log("inven", inventories);
+
+        if (!Array.isArray(inventories) || inventories.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Danh sách inventories không hợp lệ hoặc trống!"
+            });
+        };
+
+        const result = await updateInventoryManyService(inventories);
+        res.json({
+            success: true,
+            message: "Đã cập nhật tồn kho thành công!",
+            data: result
+        });
+    } catch (error) {
+        console.log("lỗi>>>", error);
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    };
+};
+
+export { updateInventoryController, updateInventoryManyController };
