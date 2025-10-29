@@ -5,7 +5,7 @@ import sequelize from "./config/db.js";
 import { connectRedis } from "../common/redis/redis.js";
 import { connectRabbitMQ } from "../common/rabbitmq/rabbitmq.js";
 import { consumeProductEvent } from "./services/productConsumer.js";
-// import productRouter from "./routes/product.route.js";
+import inventoryRouter from "./routes/inventory.route.js";
 
 const app = express();
 
@@ -23,7 +23,7 @@ app.use(cors({
 }));
 app.use(cookieParser());
 
-// app.use("/product", productRouter);
+app.use("/inventory", inventoryRouter);
 
 async function startServer() {
     try {
