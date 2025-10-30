@@ -1,4 +1,4 @@
-import { addProductService, getCategoriesService, getAllProductService } from "../service/product.service.js";
+import { addProductService, getCategoriesService, getAllProductService, updateProductService } from "../service/product.service.js";
 
 const getCategories = async (req, res) => {
     try {
@@ -30,6 +30,20 @@ const addProduct = async (req, res) => {
     };
 };
 
+const updateProduct = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, description, price, category_id, sizes, bestseller } = req.body;
+        const images = req.files;
+
+        const result = await updateProductService(id, { name, description, price, category_id, sizes, bestseller }, images);
+        res.status(200).json(result);
+    } catch (error) {
+        console.error("Error in updateProductController:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
 // danh sách sản phẩm
 const getAllProduct = async (req, res) => {
     try {
@@ -52,4 +66,4 @@ const getAllProduct = async (req, res) => {
 
 // chi tiết sản phẩm
 
-export { addProduct, getCategories, getAllProduct };
+export { addProduct, getCategories, getAllProduct, updateProduct };

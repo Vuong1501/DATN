@@ -138,6 +138,107 @@ const addProductService = async ({ name, description, price, category_id, sizes,
     }
 };
 
+const updateProductService = async (id, { name, description, price, category_id, sizes, bestseller }, images) => {
+    // Chuẩn hóa dữ liệu
+    const parsedPrice = typeof price === "string" ? parseFloat(price) : price;
+    const bestSellerBool = bestseller === true || bestseller === "true" || bestseller === "1" || bestseller === 1;
+    const transaction = await sequelize.transaction();
+    const uploadedPublicIds = []; // để xóa nếu rollback
+
+    try {
+        const product = await Product.findByPk(id, {
+            include: [
+                { model: ProductImage, as: "images" },
+                { model: ProductSize, as: "sizes" }
+            ]
+        });
+        if (!product) throw new Error("Sản phẩm không tồn tại");
+        // Cập nhật thông tin cơ bản
+        await product.update({
+            name,
+            description,
+            price: parsedPrice,
+            category_id,
+            bestSeller: bestSellerBool
+        }, { transaction });
+
+        // Nếu có ảnh mới → xóa ảnh cũ và upload lại
+        if (images && images.length > 0) {
+            // Xóa ảnh cũ khỏi Cloudinary
+            for (const img of product.images) {
+                await cloudinary.uploader.destroy(img.imageId, { resource_type: "image" });
+            }
+            // Xóa bản ghi cũ
+            await ProductImage.destroy({ where: { productId: product.id }, transaction });
+
+            // Upload ảnh mới
+            for (const file of images) {
+                const { url, public_id } = await uploadToCloudinary(file);
+                uploadedPublicIds.push(public_id);
+                await ProductImage.create(
+                    {
+                        url, imageId: public_id,
+                        productId: product.id
+                    },
+                    { transaction }
+                );
+            }
+        };
+
+        // Cập nhật size
+        if (sizes) {
+            // Xóa size cũ
+            await ProductSize.destroy({ where: { productId: product.id }, transaction });
+
+            // Thêm size mới
+            const sizeList = sizes.split(",").map(s => s.trim()).filter(Boolean);
+            for (const size of sizeList) {
+                await ProductSize.create(
+                    { size, productId: product.id },
+                    { transaction }
+                );
+            }
+        }
+
+        await transaction.commit();
+
+        // Sau khi commit thành công → gửi event sang Inventory
+        const channel = getChannel();
+        const productSizes = await ProductSize.findAll({
+            where: { productId: product.id },
+            attributes: ["id", "size"]
+        });
+
+        const eventPayload = {
+            productId: product.id,
+            name: product.name,
+            sizes: productSizes.map(s => ({
+                id: s.id,
+                size: s.size
+            }))
+        };
+        await channel.publish("product_exchange", "product.updated", Buffer.from(JSON.stringify(eventPayload)));
+        console.log("📤 Published event: product.updated", eventPayload);
+
+        // Trả về dữ liệu chi tiết sản phẩm sau khi cập nhật
+        const updatedProduct = await Product.findByPk(product.id, {
+            include: [
+                { model: ProductImage, as: "images", attributes: ["url"] },
+                { model: ProductSize, as: "sizes", attributes: ["size"] }
+            ]
+        });
+
+        return updatedProduct;
+    } catch (error) {
+        await transaction.rollback();
+        // rollback: xóa ảnh đã upload mới
+        if (uploadedPublicIds.length > 0) {
+            await Promise.all(uploadedPublicIds.map(pid => cloudinary.uploader.destroy(pid, { resource_type: "image" })));
+        }
+        throw err;
+    }
+};
+
 const getAllProductService = async (page = 1, limit = 10) => {
     const offset = (page - 1) * limit;
     // Lấy danh sách sản phẩm
@@ -169,6 +270,6 @@ const getAllProductService = async (page = 1, limit = 10) => {
         limit,
         products: productsWithCategory
     };
-}
+};
 
-export { addProductService, getCategoriesService, getAllProductService };
+export { addProductService, getCategoriesService, getAllProductService, updateProductService };
