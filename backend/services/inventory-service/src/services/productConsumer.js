@@ -2,20 +2,60 @@ import { getChannel } from "../../common/rabbitmq/rabbitmq.js";
 import { getRedis } from "../../common/redis/redis.js";
 import Inventory from "../models/inventory.model.js";
 
+
+const EXCHANGE = "product_exchange";
+const QUEUE = "inventory_product_event";
+const RETRY_QUEUE = "inventory_product_event_retry";
+const DLQ_QUEUE = "inventory_product_event_dead";
+const RETRY_DELAY = 3000;
+
+// Hàm retry
+const handleRetry = async (channel, msg, data) => {
+    const retries = msg.properties.headers?.retries || 0;
+
+    if (retries < 3) {
+        await channel.sendToQueue(
+            RETRY_QUEUE,
+            Buffer.from(JSON.stringify(data)),
+            { headers: { retries: retries + 1 }, persistent: true }
+        );
+        console.log(`🔄 Retry #${retries + 1} for event ${data.event}`);
+    } else {
+        await channel.sendToQueue(DLQ_QUEUE, Buffer.from(JSON.stringify(data)), {
+            persistent: true,
+        });
+        console.log(`💀 Move to DLQ after 3 retries: ${data.event}`);
+    }
+
+    channel.ack(msg);
+};
+
 const consumeProductEvent = async () => {
     const channel = getChannel();
-    const exchange = "product_exchange";
-    const queue = "inventory_product_event";
 
-    await channel.assertExchange(exchange, "topic", { durable: true });
-    await channel.assertQueue(queue, { durable: true });
-    await channel.bindQueue(queue, exchange, "product.*");
-    console.log("👂 Inventory-service listening for product.* events...");
+    await channel.assertExchange(EXCHANGE, "topic", { durable: true });
+    await channel.assertQueue(QUEUE, { durable: true });
+    await channel.bindQueue(QUEUE, EXCHANGE, "product.*");
 
-    channel.consume(queue, async (msg) => {
+    await channel.assertQueue(RETRY_QUEUE, {
+        durable: true,
+        messageTtl: RETRY_DELAY,
+        deadLetterExchange: EXCHANGE,
+        deadLetterRoutingKey: "product.retry", // queue chính nhận lại
+    });
+
+    // DLQ
+    await channel.assertQueue(DLQ_QUEUE, { durable: true });
+
+    channel.consume(QUEUE, async (msg) => {
         if (!msg) return;
         const data = JSON.parse(msg.content.toString());
         const event = msg.fields.routingKey;
+        if (!data.event) {
+            data.event = event;
+        }
+
+        console.log("📩 Received message:", { event, data });
 
         try {
             switch (event) {
@@ -28,6 +68,20 @@ const consumeProductEvent = async () => {
                 case "product.deleted":
                     await handleProductDeleted(data);
                     break;
+                case "product.retry": // 👈 thêm case này để handle message quay lại từ retry queue
+                    console.log("♻️ Retrying event:", data.event);
+                    switch (data.event) {
+                        case "product.created":
+                            await handleProductCreated(data);
+                            break;
+                        case "product.updated":
+                            await handleProductUpdated(data);
+                            break;
+                        case "product.deleted":
+                            await handleProductDeleted(data);
+                            break;
+                    }
+                    break;
                 default:
                     console.log("⚠️ Unknown event:", event);
             }
@@ -35,12 +89,14 @@ const consumeProductEvent = async () => {
             channel.ack(msg);
         } catch (err) {
             console.error("Error handling event:", err);
-            channel.nack(msg, false, true);
+            await handleRetry(channel, msg, data);
         }
     });
 };
 
 const handleProductCreated = async (data) => {
+    // console.log("handleProductCreated running...");
+    // throw new Error("Fake error for demo retry!");
     const { productId, sizes } = data;
     const redis = getRedis();
     for (const s of sizes) {

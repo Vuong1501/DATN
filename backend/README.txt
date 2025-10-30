@@ -105,6 +105,7 @@ G --> I[NotificationService consumer gửi mail xác nhận]
 -----------------------------------------------------------------RABBITMQ--------------------------------------------------------------------------------
 - Hiện tại bên categoryService đang publish sự kiện thêm, xóa danh mục sang bên product(product đang nhận)
 - bên user-service đang publish sự kiện gửi mail sang cho NotificationService (đang có sẵn mail order_success)
+- bên product đang publish sự kiện thêm sản phẩm mới sang bên inventory để tạo redis và stock = 0
 
 tức là khi thêm sản phẩm thì product publish sang inventory
 còn khi lấy sản phẩm thì product gọi sang inventory để lấy thông tin tồn kho(có thể thêm redis như bên category)
