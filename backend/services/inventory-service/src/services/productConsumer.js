@@ -1,6 +1,7 @@
 import { getChannel } from "../../common/rabbitmq/rabbitmq.js";
 import { getRedis } from "../../common/redis/redis.js";
 import Inventory from "../models/inventory.model.js";
+import { Op } from "sequelize";
 
 
 const EXCHANGE = "product_exchange";
@@ -109,36 +110,40 @@ const handleProductCreated = async (data) => {
 };
 
 const handleProductUpdated = async (data) => {
-    // const { productId, sizes } = data;
-    // const redis = getRedis();
 
-    // // Lấy danh sách inventory hiện tại của sản phẩm
-    // const existingInventories = await Inventory.findAll({
-    //     where: { productId }
-    // });
+    const { productId, sizes, oldSize } = data;
 
-    // const existingSizeIds = existingInventories.map(i => i.productSizeId);
-    // const newSizeIds = sizes.map(s => s.id);
+    const redis = getRedis();
 
-    // // 1️⃣ Thêm size mới
-    // for (const s of sizes) {
-    //     if (!existingSizeIds.includes(s.id)) {
-    //         await Inventory.create({ productId, productSizeId: s.id, stock: 0 });
-    //         await redis.set(`inventory:productSize:${s.id}`, 0);
-    //         console.log(`🆕 Added inventory for size ${s.id}`);
-    //     }
-    // }
+    const newSizeIds = sizes.map(s => s.id);
+    const oldSizeIds = oldSize.map(s => s.id);
+    // tìm và xóa size cũ
+    const oldInventories = await Inventory.findAll({
+        where: {
+            productSizeId: {
+                [Op.in]: oldSizeIds
+            }
+        },
+        attributes: ["id", "productSizeId"],
+    });
+    for (const inv of oldInventories) {
+        await inv.destroy();
+        await redis.del(`inventory:productSize:${inv.productSizeId}`);
+        console.log(`Removed old inventory & cache for size ${inv.productSizeId}`);
+    };
 
-    // // 2️⃣ Xóa size cũ không còn trong danh sách mới
-    // for (const inv of existingInventories) {
-    //     if (!newSizeIds.includes(inv.productSizeId)) {
-    //         await inv.destroy();
-    //         await redis.del(`inventory:productSize:${inv.productSizeId}`);
-    //         console.log(`🗑 Removed inventory for size ${inv.productSizeId}`);
-    //     }
-    // }
+    // Tạo mới inventory cho size mới
+    for (const sizeId of newSizeIds) {
+        const newInv = await Inventory.create({
+            productSizeId: sizeId,
+            stock: 0,
+        });
 
-    // console.log(`🔄 Updated inventory records for product ${productId}`);
+        await redis.set(`inventory:productSize:${sizeId}`, 0);
+        console.log(`Created new inventory & cache for size ${sizeId}`);
+    }
+
+    console.log(`Synced inventory for product ${productId}`);
 };
 
 const handleProductDeleted = async (data) => {
@@ -151,7 +156,7 @@ const handleProductDeleted = async (data) => {
     //     await redis.del(`inventory:productSize:${sizeId}`);
     // }
 
-    // console.log(`❌ Deleted inventory records for product ${productId}`);
+    // console.log(` Deleted inventory records for product ${productId}`);
 };
 
 export { consumeProductEvent, handleProductCreated, handleProductUpdated, handleProductDeleted };

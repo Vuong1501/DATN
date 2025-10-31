@@ -113,8 +113,5 @@ còn khi lấy sản phẩm thì product gọi sang inventory để lấy thông
 
 khi thêm sản phẩm + size => publish sự kiện sang inventory => inventory cache(khi thay đổi tồn kho cũng sẽ cache lại)
 khi thêm sản phẩm mới thì chỉ publish sang inventory để stock của size đó bằng 0, phải có 1 trang để
-gọi api bên inventory-service để thêm tồn kho
 
-
-- chiều đọc hiểu api update sản phẩm + làm api xóa sản phẩm
 
