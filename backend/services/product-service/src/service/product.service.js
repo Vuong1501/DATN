@@ -190,16 +190,16 @@ const updateProductService = async (id, { name, description, price, category_id,
             // Chuẩn hóa danh sách size mới
             const newSizes = sizes.split(",").map(s => s.trim()).filter(Boolean).sort();
 
-            // Lấy danh sách size cũ (chỉ lấy field "size")
+            // Lấy danh sách size cũ
             const oldSizes = (
                 await ProductSize.findAll({
                     where: { productId: product.id },
                     attributes: ["id", "size"]
                 })
-            ).map(s => ({ id: s.id, size: s.size })).sort();
-
+            ).map(s => ({ id: s.id, size: s.size }));
+            const oldSizeNames = oldSizes.map(s => s.size).sort();
             // So sánh xem có thay đổi không
-            const oldSizesStr = oldSizes.join(",");
+            const oldSizesStr = oldSizeNames.join(",");
             const newSizesStr = newSizes.join(",");
             const sizeChanged = oldSizesStr !== newSizesStr;
 
@@ -308,73 +308,3 @@ const getAllProductService = async (page = 1, limit = 10) => {
 };
 
 export { addProductService, getCategoriesService, getAllProductService, updateProductService };
-
-
-// if (sizes) {
-//     const newSizes = sizes.split(",").map(s => s.trim()).filter(Boolean);
-
-//     // Lấy danh sách size cũ (chỉ lấy mảng string)
-//     const oldSizes = (
-//         await ProductSize.findAll({
-//             where: { productId: product.id },
-//             attributes: ["size"]
-//         })
-//     ).map(s => s.size);
-
-//     // So sánh để biết có thay đổi không
-//     const sizesToAdd = newSizes.filter(s => !oldSizes.includes(s));
-//     const sizesToRemove = oldSizes.filter(s => !newSizes.includes(s));
-
-//     const sizeChanged = sizesToAdd.length > 0 || sizesToRemove.length > 0;
-
-//     if (sizeChanged) {
-//         // Gộp tất cả thao tác DB vào cùng transaction
-//         if (sizesToRemove.length) {
-//             await ProductSize.destroy({
-//                 where: {
-//                     productId: product.id,
-//                     size: sizesToRemove
-//                 },
-//                 transaction
-//             });
-//         }
-
-//         if (sizesToAdd.length) {
-//             const newSizeRecords = sizesToAdd.map(size => ({
-//                 size,
-//                 productId: product.id
-//             }));
-//             await ProductSize.bulkCreate(newSizeRecords, { transaction });
-//         }
-
-//         await transaction.commit();
-
-//         // Chỉ publish event khi có thay đổi
-//         const channel = getChannel();
-//         const productSizes = await ProductSize.findAll({
-//             where: { productId: product.id },
-//             attributes: ["id", "size"]
-//         });
-
-//         const eventPayload = {
-//             productId: product.id,
-//             name: product.name,
-//             sizes: productSizes.map(s => ({
-//                 id: s.id,
-//                 size: s.size
-//             }))
-//         };
-
-//         await channel.publish(
-//             "product_exchange",
-//             "product.updated",
-//             Buffer.from(JSON.stringify(eventPayload))
-//         );
-
-//         console.log("📤 Published event: product.updated", eventPayload);
-//     } else {
-//         await transaction.commit();
-//     }
-// } else {
-//     await transaction.commit();
-// }
