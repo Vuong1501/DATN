@@ -147,16 +147,24 @@ const handleProductUpdated = async (data) => {
 };
 
 const handleProductDeleted = async (data) => {
-    // const { productId, sizes } = data;
-    // const redis = getRedis();
+    const { sizeIds } = data;
+    const redis = getRedis();
+    // tìm và xóa size cũ
+    const oldInventories = await Inventory.findAll({
+        where: {
+            productSizeId: {
+                [Op.in]: sizeIds
+            }
+        },
+        attributes: ["id", "productSizeId"],
+    });
+    for (const inv of oldInventories) {
+        await inv.destroy();
+        await redis.del(`inventory:productSize:${inv.productSizeId}`);
+        console.log(`Removed old inventory & cache for size ${inv.productSizeId}`);
+    };
 
-    // await Inventory.destroy({ where: { productId } });
-
-    // for (const sizeId of sizes) {
-    //     await redis.del(`inventory:productSize:${sizeId}`);
-    // }
-
-    // console.log(` Deleted inventory records for product ${productId}`);
+    console.log(` Deleted inventory records for productSizeId `);
 };
 
 export { consumeProductEvent, handleProductCreated, handleProductUpdated, handleProductDeleted };

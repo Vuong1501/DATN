@@ -1,6 +1,6 @@
 import express from "express";
 
-import { addProduct, getCategories, getAllProduct, updateProduct } from "../controllers/product.controller.js";
+import { addProduct, getCategories, getAllProduct, updateProduct, deleteProduct } from "../controllers/product.controller.js";
 import { validateAddProduct, validateUpdateProduct } from "../validate/product.validate.js";
 import upload from "../middleware/multer.js";
 
@@ -10,5 +10,7 @@ router.get("/getCategory", getCategories);
 router.post("/add", upload.array("images", 5), validateAddProduct, addProduct);
 router.put("/update/:id", upload.array("images", 5), validateUpdateProduct, updateProduct);
 router.get("/getAllProduct", getAllProduct);
+router.delete("/delete/:id", deleteProduct);
+
 
 export default router;

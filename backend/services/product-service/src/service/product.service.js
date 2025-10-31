@@ -307,4 +307,34 @@ const getAllProductService = async (page = 1, limit = 10) => {
     };
 };
 
-export { addProductService, getCategoriesService, getAllProductService, updateProductService };
+const deleteProductService = async (id) => {
+    const product = await Product.findByPk(id);
+    if (!product) throw new Error("Product not found");
+
+    // lấy ra các size để xóa bên inventory
+    const oldSize = await ProductSize.findAll({
+        where: { productId: id },
+        attributes: ["id"]
+    });
+    const sizeIds = oldSize.map(s => s.id);
+    // xóa trong productSize
+    await ProductSize.destroy({
+        where: { productId: id }
+    });
+    //xóa trong productImage
+    await ProductImage.destroy({
+        where: { productId: id }
+    });
+    await product.destroy();
+
+    // gửi event sang inventory
+    const channel = getChannel();
+    await channel.publish(
+        "product_exchange",
+        "product.deleted",
+        Buffer.from(JSON.stringify({ sizeIds }))
+    );
+    console.log(`Published event product_deleted for product ${id}`);
+}
+
+export { addProductService, getCategoriesService, getAllProductService, updateProductService, deleteProductService };

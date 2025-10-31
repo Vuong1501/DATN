@@ -12,6 +12,7 @@ router.get("/:id", proxyRequest(productService));
 router.put("/update/:id", authMiddleware, adminMiddleware, proxyRequest(productService))
 router.get("/getCategory", proxyRequest(productService));
 router.post("/add", authMiddleware, adminMiddleware, proxyRequest(productService));
+router.delete("/delete/:id", authMiddleware, adminMiddleware, proxyRequest(productService));
 
 
 export default router;
