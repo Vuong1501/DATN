@@ -57,6 +57,23 @@ lấy thông tin cá nhân (xong)
 lấy danh sách người dùng(xong)
 
 -product-service
+thêm sản phẩm(xong)
+sửa sản phẩm(xong)
+xóa sản phẩm(xong)
+danh sách sản phẩm(xong)
+chi tiết sản phẩm
+
+-category-service
+thêm danh mục(xong)
+sửa danh mục(xong)
+xóa danh mục(xong)
+danh sách danh mục(xong)
+
+
+nhớ là trang update sản phẩm (gọi api lấy chi tiết sản phẩm, ấn LƯU thì gọi api update) không
+cập nhật tồn kho ở trang này, sẽ có 1 trang riêng để cập nhật tồn kho(ở trang này không
+cập nhật tên, price,...)
+
 
 
 -- khi đến đoạn gửi mail thì cần nhớ 
@@ -110,8 +127,18 @@ G --> I[NotificationService consumer gửi mail xác nhận]
 tức là khi thêm sản phẩm thì product publish sang inventory
 còn khi lấy sản phẩm thì product gọi sang inventory để lấy thông tin tồn kho(có thể thêm redis như bên category)
 
+---Trang quản lý tồn kho (Inventory Management)
+Xem danh sách tồn kho từng sản phẩm
+Cập nhật số lượng (stock)
+Có thể tìm theo productName hoặc size
+Không sửa giá, tên, hay mô tả sản phẩm
 
 khi thêm sản phẩm + size => publish sự kiện sang inventory => inventory cache(khi thay đổi tồn kho cũng sẽ cache lại)
 khi thêm sản phẩm mới thì chỉ publish sang inventory để stock của size đó bằng 0, phải có 1 trang để
 
 
+-- Nếu tách 2 trang:
+1.Sửa sản phẩm(chỉ sửa tên, giá, ...) thì trang này vào sẽ gọi api lấy chi tiết 1 sản phẩm, khi lưu thì gọi api update sản phẩm
+2.Trang sửa tồn kho(chỉ sửa tồn kho) thì trang này sẽ gọi api lấy chi tiết sản phẩm có chứa stock(mà bên inventory không có id sản phẩm
+thì sẽ không lấy ra được các tồn kho của các size của sản phẩm đó để hiển thị => phải gọi gộp) nhưng bên inventory đang
+thiết kế api kiểu sẽ gọi trang riêng

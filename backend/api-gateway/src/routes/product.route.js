@@ -7,7 +7,7 @@ const router = express.Router();
 const productService = serviceUrls.product;
 
 router.get("/getAllProduct", proxyRequest(productService));
-router.get("/:id", proxyRequest(productService));
+router.get("/getOne/:id", proxyRequest(productService));
 
 router.put("/update/:id", authMiddleware, adminMiddleware, proxyRequest(productService))
 router.get("/getCategory", proxyRequest(productService));

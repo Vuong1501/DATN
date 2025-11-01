@@ -1,6 +1,6 @@
 import {
     addProductService, getCategoriesService, getAllProductService,
-    updateProductService, deleteProductService
+    updateProductService, deleteProductService, getOneProductService
 } from "../service/product.service.js";
 
 const getCategories = async (req, res) => {
@@ -78,5 +78,20 @@ const deleteProduct = async (req, res) => {
 };
 
 // chi tiết sản phẩm
+const getOneProduct = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await getOneProductService(id);
+        console.log("réult>>>>>", JSON.stringify(result, null, 2));
 
-export { addProduct, getCategories, getAllProduct, updateProduct, deleteProduct };
+        res.status(200).json({
+            success: true,
+            result
+        });
+    } catch (error) {
+        console.error("Error in getProductById:", error);
+        return res.status(500).json({ error: error.message });
+    }
+}
+
+export { addProduct, getCategories, getAllProduct, updateProduct, deleteProduct, getOneProduct };

@@ -335,6 +335,27 @@ const deleteProductService = async (id) => {
         Buffer.from(JSON.stringify({ sizeIds }))
     );
     console.log(`Published event product_deleted for product ${id}`);
-}
+};
+const getOneProductService = async (id) => {
+    const product = await Product.findByPk(id);
+    if (!product) throw new Error("Sản phẩm không tồn tại");
+    const result = await Product.findByPk(id, {
+        attributes: ["id", "name", "price", "bestSeller"],
+        include: [
+            {
+                model: ProductImage,
+                as: "images",
+                attributes: ["url"]
+            },
+            {
+                model: ProductSize,
+                as: "sizes",
+                attributes: ["size"]
+            }
+        ]
+    });
+    return result;
+};
 
-export { addProductService, getCategoriesService, getAllProductService, updateProductService, deleteProductService };
+export { addProductService, getCategoriesService, getAllProductService, updateProductService, deleteProductService, getOneProductService };
+
