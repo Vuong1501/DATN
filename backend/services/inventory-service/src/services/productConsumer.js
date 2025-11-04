@@ -69,6 +69,9 @@ const consumeProductEvent = async () => {
                 case "product.deleted":
                     await handleProductDeleted(data);
                     break;
+                case "product.cacheUpdated":
+                    await handleProductCacheUpdated(data);
+                    break;
                 case "product.retry": // 👈 thêm case này để handle message quay lại từ retry queue
                     console.log("♻️ Retrying event:", data.event);
                     switch (data.event) {
@@ -80,6 +83,9 @@ const consumeProductEvent = async () => {
                             break;
                         case "product.deleted":
                             await handleProductDeleted(data);
+                            break;
+                        case "product.cacheUpdated":
+                            await handleProductCacheUpdated(data);
                             break;
                     }
                     break;
@@ -98,7 +104,8 @@ const consumeProductEvent = async () => {
 const handleProductCreated = async (data) => {
     // console.log("handleProductCreated running...");
     // throw new Error("Fake error for demo retry!");
-    const { productId, sizes } = data;
+    const { productId, name, sizes } = data;
+
     const redis = getRedis();
     for (const s of sizes) {
         await Inventory.create({ productSizeId: s.id, stock: 0 });
@@ -106,7 +113,11 @@ const handleProductCreated = async (data) => {
         const redisKey = `inventory:productSize:${s.id}`;
         await redis.set(redisKey, 0);
     };
-    console.log(`✅ Created inventory records for product ${productId}`);
+    console.log(`Created inventory records for product ${productId}`);
+
+    const redisKey = `product:info:${productId}`;
+    await redis.set(redisKey, JSON.stringify({ productId, name }));
+
 };
 
 const handleProductUpdated = async (data) => {
@@ -147,7 +158,8 @@ const handleProductUpdated = async (data) => {
 };
 
 const handleProductDeleted = async (data) => {
-    const { sizeIds } = data;
+    const { productId, sizeIds } = data;
+
     const redis = getRedis();
     // tìm và xóa size cũ
     const oldInventories = await Inventory.findAll({
@@ -163,8 +175,21 @@ const handleProductDeleted = async (data) => {
         await redis.del(`inventory:productSize:${inv.productSizeId}`);
         console.log(`Removed old inventory & cache for size ${inv.productSizeId}`);
     };
-
     console.log(` Deleted inventory records for productSizeId `);
+
+    await redis.del(`product:info:${productId}`)
 };
+
+const handleProductCacheUpdated = async (data) => {
+    const { productId, name } = data;
+    const redis = getRedis();
+    const redisKey = `product:info:${productId}`;
+
+    // Cập nhật cache thông tin sản phẩm
+    await redis.set(redisKey, JSON.stringify({ productId, name }));
+
+    console.log(`Cache updated for product ${productId}`);
+};
+
 
 export { consumeProductEvent, handleProductCreated, handleProductUpdated, handleProductDeleted };

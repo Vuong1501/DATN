@@ -40,7 +40,7 @@ const getCategoriesService = async () => {
     }
 
     // Gọi Category-service qua REST
-    console.log("🌐 Gọi Category-service qua REST...");
+    console.log("Gọi Category-service qua REST...");
     const response = await axios.get(`${CATEGORY_SERVICE_URL}/getAll`);
 
     const categories = response.data;
@@ -49,7 +49,7 @@ const getCategoriesService = async () => {
     await redis.set("categories:all", JSON.stringify(categories), { EX: 3600 });
     // Đo thời gian chạy
     const elapsed = Date.now() - start;
-    console.log(`⏱️ Lấy danh mục qua REST mất ${elapsed}ms`);
+    console.log(`Lấy danh mục qua REST mất ${elapsed}ms`);
     return categories;
 };
 
@@ -106,7 +106,7 @@ const addProductService = async ({ name, description, price, category_id, sizes,
             }))
         };
         await channel.publish("product_exchange", "product.created", Buffer.from(JSON.stringify(eventPayload)));
-        console.log("📤 Published event: product.created", eventPayload);
+        console.log("Published event: product.created", eventPayload);
 
         // Lấy danh mục từ cache (hoặc gọi REST nếu chưa có)
         const categories = await getCategoriesService();
@@ -186,12 +186,14 @@ const updateProductService = async (id, { name, description, price, category_id,
         };
 
         // Cập nhật size
+        let sizeChanged = false;
+        let oldSizes = [];
         if (sizes) {
             // Chuẩn hóa danh sách size mới
             const newSizes = sizes.split(",").map(s => s.trim()).filter(Boolean).sort();
 
             // Lấy danh sách size cũ
-            const oldSizes = (
+            oldSizes = (
                 await ProductSize.findAll({
                     where: { productId: product.id },
                     attributes: ["id", "size"]
@@ -201,7 +203,7 @@ const updateProductService = async (id, { name, description, price, category_id,
             // So sánh xem có thay đổi không
             const oldSizesStr = oldSizeNames.join(",");
             const newSizesStr = newSizes.join(",");
-            const sizeChanged = oldSizesStr !== newSizesStr;
+            sizeChanged = oldSizesStr !== newSizesStr;
 
             if (sizeChanged) {
                 // Xóa toàn bộ size cũ
@@ -213,48 +215,48 @@ const updateProductService = async (id, { name, description, price, category_id,
                     productId: product.id
                 }));
                 await ProductSize.bulkCreate(newSizeRecords, { transaction });
+            };
+        };
+        //Commit trước khi gửi event
+        await transaction.commit();
 
-                // ✅ Commit trước khi publish event
-                await transaction.commit();
+        // Gửi event sau khi cập nhật
+        const channel = getChannel();
+        if (sizeChanged) {
+            // Nếu thay đổi size → gửi product.updated
+            const productSizes = await ProductSize.findAll({
+                where: { productId: product.id },
+                attributes: ["id", "size"]
+            });
+            const eventPayload = {
+                productId: product.id,
+                name: product.name,
+                sizes: productSizes.map(s => ({
+                    id: s.id,
+                    size: s.size
+                })),
+                oldSize: oldSizes
+            };
+            await channel.publish(
+                "product_exchange",
+                "product.updated",
+                Buffer.from(JSON.stringify(eventPayload))
+            );
 
-                // 🔥 Gửi event sang Inventory service
-                const channel = getChannel();
-                const productSizes = await ProductSize.findAll({
-                    where: { productId: product.id },
-                    attributes: ["id", "size"]
-                });
-
-                const eventPayload = {
-                    productId: product.id,
-                    name: product.name,
-                    sizes: productSizes.map(s => ({
-                        id: s.id,
-                        size: s.size
-                    })),
-                    oldSize: oldSizes.map(s => ({
-                        id: s.id,
-                        size: s.size
-                    }))
-                };
-
-                await channel.publish(
-                    "product_exchange",
-                    "product.updated",
-                    Buffer.from(JSON.stringify(eventPayload))
-                );
-
-                console.log(" Published event: product.updated", eventPayload);
-            } else {
-                // Không thay đổi size -> chỉ commit là đủ
-                await transaction.commit();
-                console.log(" Sizes unchanged — no event published.");
-            }
+            console.log("Published event: product.updated", eventPayload);
         } else {
-            // Không gửi size lên -> giữ nguyên
-            await transaction.commit();
-            console.log("No sizes provided — kept old sizes.");
-        }
+            const eventPayload = {
+                productId: product.id,
+                name: product.name,
+            };
+            await channel.publish(
+                "product_exchange",
+                "product.cacheUpdated",
+                Buffer.from(JSON.stringify(eventPayload))
+            );
 
+            console.log("Published event: product.cacheUpdated", eventPayload);
+        }
         // Trả về dữ liệu chi tiết sản phẩm sau khi cập nhật
         const updatedProduct = await Product.findByPk(product.id, {
             include: [
@@ -270,15 +272,13 @@ const updateProductService = async (id, { name, description, price, category_id,
         if (uploadedPublicIds.length > 0) {
             await Promise.all(uploadedPublicIds.map(pid => cloudinary.uploader.destroy(pid, { resource_type: "image" })));
         }
-        throw err;
+        throw error;
     }
 };
-
 const getAllProductService = async (page = 1, limit = 10) => {
     const offset = (page - 1) * limit;
     // Lấy danh sách sản phẩm
     const count = await Product.count();
-    console.log("count>>>>", count);
 
     const products = await Product.findAll({
         include: [{ model: ProductImage, as: "images", attributes: ["url"] }],
@@ -329,13 +329,18 @@ const deleteProductService = async (id) => {
 
     // gửi event sang inventory
     const channel = getChannel();
+    const eventPayload = {
+        productId: product.id,
+        sizeIds
+    };
     await channel.publish(
         "product_exchange",
         "product.deleted",
-        Buffer.from(JSON.stringify({ sizeIds }))
+        Buffer.from(JSON.stringify(eventPayload))
     );
     console.log(`Published event product_deleted for product ${id}`);
 };
+
 const getOneProductService = async (id) => {
     const product = await Product.findByPk(id);
     if (!product) throw new Error("Sản phẩm không tồn tại");

@@ -39,11 +39,7 @@ Client ID 852218064853-7aog4t8ibs7gfio6rs4vs3fo1ve5jqlg.apps.googleusercontent.c
 
 Trong e-commerce, quan trọng nhất là tính nhất quán dữ liệu (đơn hàng – thanh toán – tồn kho) và khả năng chịu tải cao khi traffic đột biến (sale, flash sale).
 
-tách StockService, categoryService(Gom chung Category + SubCategory vào cùng một service) xem chat gpt đoạn CATEGORY - SERVICE - TỒN KHO
-
 product-service gọi sang categoryService bằng rabbitMQ
-
--- xem phần validate trước khi tạo sản phẩm mới
 
 -user-service 
 -- Client
@@ -142,3 +138,20 @@ khi thêm sản phẩm mới thì chỉ publish sang inventory để stock của
 2.Trang sửa tồn kho(chỉ sửa tồn kho) thì trang này sẽ gọi api lấy chi tiết sản phẩm có chứa stock(mà bên inventory không có id sản phẩm
 thì sẽ không lấy ra được các tồn kho của các size của sản phẩm đó để hiển thị => phải gọi gộp) nhưng bên inventory đang
 thiết kế api kiểu sẽ gọi trang riêng
+
+bên product đang gọi category
+cache danh sách sản phẩm bên inventory(nếu bên product có thêm, sửa, xóa thì cũng cần cache lại danh sách)
+2 cache stock và cache danh sách sản phẩm là khác nhau(hình như đang cùng event gửi sang, chieeuf xem)
+
+xem đoạn chatgpt tách service inventory
+
+ĐỌC
+Lý do:
+Tiêu chí	Giải thích
+✅ Loose coupling (giảm phụ thuộc)	Inventory không gọi trực tiếp Product, mà chỉ nghe event. Nếu Product chết → Inventory vẫn chạy bình thường.
+✅ Real-time update	Khi Product đổi tên, event được publish → Inventory cập nhật cache ngay. Không cần gọi API mỗi lần load.
+✅ Hiệu năng cao	Dữ liệu hiển thị tồn kho lấy từ Redis, cực nhanh, không bị trễ mạng hay nghẽn service khác.
+✅ Scalability (mở rộng dễ)	Sau này bạn thêm service khác (ví dụ “Order”) → chỉ cần subscribe event từ Product là xong, không cần sửa code Product.
+✅ Được dùng thực tế trong hệ thống lớn	Mô hình này giống như trong Shopee, Lazada, Netflix, Booking.com — tất cả đều dùng event-driven + cache để tránh phụ thuộc giữa service.
+
+mai xem phần cache thông tin sản phẩm ở tạo và xóa bên consume
