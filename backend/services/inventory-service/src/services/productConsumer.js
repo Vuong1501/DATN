@@ -116,7 +116,17 @@ const handleProductCreated = async (data) => {
     console.log(`Created inventory records for product ${productId}`);
 
     const redisKey = `product:info:${productId}`;
-    await redis.set(redisKey, JSON.stringify({ productId, name }));
+    const cacheProduct = {
+        id: productId,
+        name,
+        sizes: sizes.map(s => ({
+            id: s.id,
+            size: s.size
+        }))
+    };
+    await redis.set(redisKey, JSON.stringify(cacheProduct));
+    console.log("cache trong redis>>>", JSON.stringify(cacheProduct, null, 2));
+
 
 };
 

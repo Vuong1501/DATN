@@ -46,4 +46,45 @@ const updateInventoryManyService = async (inventories) => {
     return results;
 };
 
-export { updateInventoryService, updateInventoryManyService };
+const getAllStock = async () => {
+    const redis = getRedis();
+    const productKeys = await redis.keys("product:info:*");
+    console.log("productKeys>>>", productKeys);
+
+    if (productKeys.length === 0) {
+        throw new Error("Không có sản phẩm trong cache!");
+    };
+    const result = [];
+    for (const key of productKeys) {
+        const productData = await redis.get(key);
+
+        if (!productData) continue;
+
+        const product = JSON.parse(productData);
+
+
+        // Mỗi sản phẩm có nhiều size
+        for (const s of product.sizes || []) {
+            const stockKey = `inventory:productSize:${s.id}`;
+            const stockValue = await redis.get(stockKey);
+            const stock = stockValue ? Number(stockValue) : 0;
+
+            result.push({
+                productId: product.id,
+                productName: product.name,
+                sizeId: s.id,
+                sizeName: s.size,
+                stock,
+            });
+        }
+    }
+    result.sort((a, b) => a.productId - b.productId);
+
+    return ({
+        message: "Danh sách tồn kho hiện tại",
+        total: result.length,
+        data: result,
+    });
+};
+
+export { updateInventoryService, updateInventoryManyService, getAllStock };

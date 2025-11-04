@@ -1,4 +1,4 @@
-import { updateInventoryService, updateInventoryManyService } from "../services/inventory.service.js";
+import { updateInventoryService, updateInventoryManyService, getAllStock } from "../services/inventory.service.js";
 
 const updateInventoryController = async (req, res) => {
     try {
@@ -42,4 +42,17 @@ const updateInventoryManyController = async (req, res) => {
     };
 };
 
-export { updateInventoryController, updateInventoryManyController };
+const getAllStockController = async (req, res) => {
+    try {
+        const result = await getAllStock();
+        res.json({
+            success: true,
+            result
+        })
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    };
+};
+
+export { updateInventoryController, updateInventoryManyController, getAllStockController };

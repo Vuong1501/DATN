@@ -8,5 +8,7 @@ const inventoryService = serviceUrls.inventory;
 
 router.patch("/updateInventory/:productSizeId", authMiddleware, adminMiddleware, proxyRequest(inventoryService));
 router.patch("/updateInventoryMany", authMiddleware, adminMiddleware, proxyRequest(inventoryService));
+router.get("/getAllStock", authMiddleware, adminMiddleware, proxyRequest(inventoryService));
+
 
 export default router;
