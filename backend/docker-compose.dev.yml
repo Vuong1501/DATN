@@ -73,3 +73,16 @@ services:
       - "3005:3005"
     environment:
       NODE_ENV: development
+
+  cart-service:
+    build:
+      context: ./services/cart-service
+      target: dev
+    volumes:
+      - ./services/cart-service/src:/app/src
+      - ./common:/app/common
+    command: npm run dev
+    ports:
+      - "3006:3006"
+    environment:
+      NODE_ENV: development

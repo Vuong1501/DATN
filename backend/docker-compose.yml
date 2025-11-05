@@ -109,6 +109,20 @@ services:
       - rabbitmq
     networks:
       - mynet
+
+  cart-service:
+    build:
+      context: ./services/cart-service
+      target: prod
+    ports:
+      - "3006:3006"
+    env_file:
+      - ./services/cart-service/.env
+    depends_on:
+      - redis
+      - rabbitmq
+    networks:
+      - mynet
 networks:
   mynet:
     driver: bridge

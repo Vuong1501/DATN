@@ -159,3 +159,5 @@ mai xem phần cache thông tin sản phẩm ở tạo và xóa bên consume
 ở trang chỉnh sửa tồn kho sẽ trả ra thông tin sản phẩm là id, tên, size, tồn kho của size đó
 xem xem nên thiết kế ở trang cập nhật tồn kho thì cập nhật ở trang đó luôn hay ở trang khác
 nếu ở trang khác thì cần thêm id lấy tồn kho cho 1 size đó
+
+
