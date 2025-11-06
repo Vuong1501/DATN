@@ -1,10 +1,10 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("../config/database");
+import { DataTypes } from "sequelize";
+import sequelize from "../config/db.js";
 
-const Cart = require("./cart")(sequelize, DataTypes);
-const CartItem = require("./cartItem")(sequelize, DataTypes);
+import Cart from "./cart.model.js";
+import CartItem from "./cartItem.model.js";
 
 Cart.hasMany(CartItem, { foreignKey: "cartId", as: "items" });
 CartItem.belongsTo(Cart, { foreignKey: "cartId", as: "cart" });
 
-module.exports = { sequelize, Cart, CartItem };
+export { sequelize, Cart, CartItem };

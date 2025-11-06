@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import sequelize from "./config/db.js";
 import { connectRedis } from "../common/redis/redis.js";
 import { connectRabbitMQ } from "../common/rabbitmq/rabbitmq.js";
+import cartRouter from "./routes/cart.route.js";
 
 const app = express();
 
@@ -21,6 +22,8 @@ app.use(cors({
 }));
 app.use(cookieParser());
 
+app.use("/cart", cartRouter);
+
 async function startServer() {
     try {
         // await connectWithRetry(); nếu connect mysql lỗi thì dùng
@@ -34,7 +37,7 @@ async function startServer() {
 
 
         app.listen(PORT, () => {
-            console.log(`Product service running on port ${PORT}`);
+            console.log(`cart service running on port ${PORT}`);
         });
     } catch (err) {
         console.error("Failed to start service:", err);
