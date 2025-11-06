@@ -42,6 +42,18 @@ const updateItemSelectedService = async (id, selected) => {
     item.isSelected = selected;
     await item.save();
     return item;
+};
+
+const updateQuantityService = async (cartItemId, parsedQuantity) => {
+    const item = await CartItem.findByPk(cartItemId);
+    if (!item) {
+        throw new Error("Không tìm thấy sản phẩm trong giỏ hàng.");
+    };
+
+    // cập nhật số lượng
+    item.quantity = parsedQuantity;
+    await item.save();
+    return item;
 }
 
-export { addCartService, updateItemSelectedService };
+export { addCartService, updateItemSelectedService, updateQuantityService };
