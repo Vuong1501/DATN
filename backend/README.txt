@@ -166,7 +166,7 @@ nếu ở trang khác thì cần thêm id lấy tồn kho cho 1 size đó
 1. Thêm sản phẩm vào giỏ hàng (xong)
 2. Lấy danh sách giỏ hàng
 3. Cập nhật tick chọn (selected)(xong)
-4. Cập nhật số lượng sản phẩm
+4. Cập nhật số lượng sản phẩm(xong)
 5. Xóa sản phẩm khỏi giỏ hàng
 6. Lấy danh sách sản phẩm được chọn (để đặt hàng)
 7. Xóa toàn bộ giỏ hàng (sau khi đặt hàng xong)

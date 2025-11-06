@@ -1,4 +1,4 @@
-import { addCartService, updateItemSelectedService, updateQuantityService } from "../services/cart.service.js";
+import { addCartService, updateItemSelectedService, updateQuantityService, deleteItemService } from "../services/cart.service.js";
 
 const addCartController = async (req, res) => {
     try {
@@ -59,4 +59,21 @@ const updateQuantityController = async (req, res) => {
     }
 };
 
-export { addCartController, updateItemSelectedController, updateQuantityController };
+const deleteItemController = async (req, res) => {
+    try {
+        const { cartItemId } = req.params;
+        await deleteItemService(cartItemId);
+        return res.status(200).json({
+            success: true,
+            message: "Đã xóa sản phẩm khỏi giỏ hàng"
+        });
+    } catch (error) {
+        console.error("Lỗi khi xóa sản phẩm:", error);
+        return res.status(500).json({
+            message: "Lỗi server",
+            error: error.message
+        });
+    }
+}
+
+export { addCartController, updateItemSelectedController, updateQuantityController, deleteItemController };
