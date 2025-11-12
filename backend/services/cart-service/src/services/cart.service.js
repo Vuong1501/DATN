@@ -64,6 +64,61 @@ const deleteItemService = async (cartItemId) => {
 
     await item.destroy();
     return true;
-}
+};
 
-export { addCartService, updateItemSelectedService, updateQuantityService, deleteItemService };
+const getAllService = async (userId) => {
+    const cart = await Cart.findOne({ where: { userId: userId } });
+    if (!cart) return [];
+
+    // lấy toàn bộ items trong giỏ hàng
+    const cartItems = await CartItem.findAll({ where: { cartId: cart.id } });
+    console.log("cartItems>>>", cartItems);
+
+    const result = [];
+    const redis = getRedis();
+
+    for (const item of cartItems) {
+        const productKey = `product:info:${item.productId}`;
+        const productCache = await redis.get(productKey);
+        let productInfo = null;
+        if (productCache) {
+            productInfo = JSON.parse(productCache);
+            console.log("thông tin sản phẩm khi lấy danh sách >>>", productInfo);
+
+        } else {
+            // fallback: trường hợp cache mất, có thể gọi REST sang product-service
+            productInfo = { id: item.productId, name: "Không tìm thấy sản phẩm", sizes: [] };
+        };
+        // tìm size trong mảng sizes
+        const sizeObj = productInfo.sizes.find(s => s.id === item.productSizeId);
+        // 4️⃣ Lấy tồn kho (nếu muốn)
+        const stockKey = `inventory:productSize:${item.productSizeId}`;
+        const stockValue = await redis.get(stockKey);
+        const stock = stockValue ? Number(stockValue) : null;
+
+        // 5️⃣ Chuẩn hóa dữ liệu trả về
+        result.push({
+            id: item.id,
+            productId: item.productId,
+            productName: productInfo.name,
+            sizeId: item.productSizeId,
+            sizeName: sizeObj?.size || "Không rõ",
+            quantity: item.quantity,
+            selected: item.isSelected,
+            stock,
+            total: item.quantity * (item.price || 0)
+        });
+    };
+    // 6️⃣ Tính tổng tiền sản phẩm được chọn
+    const totalSelected = result
+        .filter(i => i.selected)
+        .reduce((sum, i) => sum + i.total, 0);
+
+    return {
+        cartId: cart.id,
+        items: result,
+        totalSelected
+    };
+};
+
+export { addCartService, updateItemSelectedService, updateQuantityService, deleteItemService, getAllService };

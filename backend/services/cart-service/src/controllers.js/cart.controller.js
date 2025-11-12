@@ -1,4 +1,4 @@
-import { addCartService, updateItemSelectedService, updateQuantityService, deleteItemService } from "../services/cart.service.js";
+import { addCartService, updateItemSelectedService, updateQuantityService, deleteItemService, getAllService } from "../services/cart.service.js";
 
 const addCartController = async (req, res) => {
     try {
@@ -73,7 +73,27 @@ const deleteItemController = async (req, res) => {
             message: "Lỗi server",
             error: error.message
         });
+    };
+};
+
+const getAllController = async (req, res) => {
+    try {
+        const userId = req.headers["x-user-id"];
+
+        const cartData = await getAllService(userId);
+        return res.status(200).json({
+            success: true,
+            message: "Lấy danh sách giỏ hàng thành công",
+            data: cartData
+        });
+    } catch (error) {
+        console.error("Lỗi khi lấy danh sách giỏ hàng:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Lỗi server",
+            error: error.message
+        });
     }
 }
 
-export { addCartController, updateItemSelectedController, updateQuantityController, deleteItemController };
+export { addCartController, updateItemSelectedController, updateQuantityController, deleteItemController, getAllController };

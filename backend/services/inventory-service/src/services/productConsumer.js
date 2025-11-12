@@ -104,7 +104,7 @@ const consumeProductEvent = async () => {
 const handleProductCreated = async (data) => {
     // console.log("handleProductCreated running...");
     // throw new Error("Fake error for demo retry!");
-    const { productId, name, sizes } = data;
+    const { productId, name, price, sizes } = data;
 
     const redis = getRedis();
     for (const s of sizes) {
@@ -119,6 +119,7 @@ const handleProductCreated = async (data) => {
     const cacheProduct = {
         id: productId,
         name,
+        price,
         sizes: sizes.map(s => ({
             id: s.id,
             size: s.size
@@ -132,39 +133,49 @@ const handleProductCreated = async (data) => {
 
 const handleProductUpdated = async (data) => {
 
-    const { productId, sizes, oldSize } = data;
+    const { productId, price, name, deletedSizeIds, addedSizes, keptSizes } = data;
 
     const redis = getRedis();
 
-    const newSizeIds = sizes.map(s => s.id);
-    const oldSizeIds = oldSize.map(s => s.id);
-    // tìm và xóa size cũ
-    const oldInventories = await Inventory.findAll({
-        where: {
-            productSizeId: {
-                [Op.in]: oldSizeIds
-            }
-        },
-        attributes: ["id", "productSizeId"],
-    });
-    for (const inv of oldInventories) {
-        await inv.destroy();
-        await redis.del(`inventory:productSize:${inv.productSizeId}`);
-        console.log(`Removed old inventory & cache for size ${inv.productSizeId}`);
-    };
-
-    // Tạo mới inventory cho size mới
-    for (const sizeId of newSizeIds) {
-        const newInv = await Inventory.create({
-            productSizeId: sizeId,
-            stock: 0,
+    // XÓA INVENTORY CỦA SIZE ĐÃ BỊ XÓA
+    if (deletedSizeIds && deletedSizeIds.length > 0) {
+        const oldInventories = await Inventory.findAll({
+            where: { productSizeId: { [Op.in]: deletedSizeIds } },
+            attributes: ["id", "productSizeId"],
         });
 
-        await redis.set(`inventory:productSize:${sizeId}`, 0);
-        console.log(`Created new inventory & cache for size ${sizeId}`);
+        for (const inv of oldInventories) {
+            await inv.destroy();
+            await redis.del(`inventory:productSize:${inv.productSizeId}`);
+            console.log(` Đã xóa inventory & cache cho sizeId ${inv.productSizeId}`);
+        }
     }
 
-    console.log(`Synced inventory for product ${productId}`);
+    // THÊM INVENTORY MỚI CHO SIZE MỚI
+    if (addedSizes && addedSizes.length > 0) {
+        for (const size of addedSizes) {
+            const newInv = await Inventory.create({
+                productSizeId: size.id,
+                stock: 0,
+            });
+            await redis.set(`inventory:productSize:${size.id}`, 0);
+            console.log(`Tạo inventory mới cho size ${size.size} (id=${size.id})`);
+        }
+    }
+    // CẬP NHẬT CACHE REDIS CHO PRODUCT
+    const redisProductKey = `product:info:${productId}`;
+    const allSizes = [...(addedSizes || []), ...(keptSizes || [])];
+    await redis.set(redisProductKey, JSON.stringify({
+        id: productId,
+        name,
+        price,
+        sizes: allSizes.map(s => ({
+            id: s.id,
+            size: s.size
+        }))
+    }));
+    const cacheValue = await redis.get(redisProductKey);
+    console.log("cache trong redis>>>", JSON.stringify(JSON.parse(cacheValue), null, 2));
 };
 
 const handleProductDeleted = async (data) => {
@@ -191,12 +202,21 @@ const handleProductDeleted = async (data) => {
 };
 
 const handleProductCacheUpdated = async (data) => {
-    const { productId, name } = data;
+    const { productId, name, price, sizes } = data;
     const redis = getRedis();
     const redisKey = `product:info:${productId}`;
 
     // Cập nhật cache thông tin sản phẩm
-    await redis.set(redisKey, JSON.stringify({ productId, name }));
+    await redis.set(redisKey, JSON.stringify(
+        {
+            productId,
+            name,
+            price,
+            sizes: sizes.map(s => ({
+                id: s.id,
+                size: s.size
+            }))
+        }));
 
     console.log(`Cache updated for product ${productId}`);
 };

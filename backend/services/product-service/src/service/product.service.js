@@ -100,6 +100,7 @@ const addProductService = async ({ name, description, price, category_id, sizes,
         const eventPayload = {
             productId: product.id,
             name,
+            price: parsedPrice,
             sizes: productSizes.map(s => ({
                 id: s.id,
                 size: s.size
@@ -155,11 +156,11 @@ const updateProductService = async (id, { name, description, price, category_id,
         if (!product) throw new Error("Sản phẩm không tồn tại");
         // Cập nhật thông tin cơ bản
         await product.update({
-            name,
-            description,
-            price: parsedPrice,
-            category_id,
-            bestSeller: bestSellerBool
+            name: name ?? product.name,
+            description: description ?? product.description,
+            price: parsedPrice ?? product.price,
+            category_id: category_id ?? product.category_id,
+            bestSeller: bestSellerBool ?? product.bestSeller
         }, { transaction });
 
         // Nếu có ảnh mới → xóa ảnh cũ và upload lại
@@ -188,33 +189,35 @@ const updateProductService = async (id, { name, description, price, category_id,
         // Cập nhật size
         let sizeChanged = false;
         let oldSizes = [];
+        let deletedSizes = [];
+        let addedSizes = [];
+        let keptSizes = [];
         if (sizes) {
             // Chuẩn hóa danh sách size mới
-            const newSizes = sizes.split(",").map(s => s.trim()).filter(Boolean).sort();
+            const newSizes = sizes.split(",").map(s => s.trim()).filter(Boolean);
 
             // Lấy danh sách size cũ
-            oldSizes = (
-                await ProductSize.findAll({
-                    where: { productId: product.id },
-                    attributes: ["id", "size"]
-                })
-            ).map(s => ({ id: s.id, size: s.size }));
-            const oldSizeNames = oldSizes.map(s => s.size).sort();
+            oldSizes = product.sizes.map(s => ({ id: s.id, size: s.size }));
+            const oldSizeMap = new Map(oldSizes.map(s => [s.size, s.id]));
+            const newSizeSet = new Set(newSizes);
+
+            deletedSizes = oldSizes.filter(s => !newSizeSet.has(s.size));
+            addedSizes = newSizes.filter(s => !oldSizeMap.has(s));
+            keptSizes = oldSizes.filter(s => newSizeSet.has(s.size));
             // So sánh xem có thay đổi không
-            const oldSizesStr = oldSizeNames.join(",");
-            const newSizesStr = newSizes.join(",");
-            sizeChanged = oldSizesStr !== newSizesStr;
+            sizeChanged = deletedSizes.length > 0 || addedSizes.length > 0;
 
             if (sizeChanged) {
-                // Xóa toàn bộ size cũ
-                await ProductSize.destroy({ where: { productId: product.id }, transaction });
+                // Xóa các size cũ
+                if (deletedSizes.length > 0) {
+                    await ProductSize.destroy({ where: { id: deletedSizes.map(s => s.id) }, transaction });
+                }
 
                 // Tạo size mới
-                const newSizeRecords = newSizes.map(size => ({
-                    size,
-                    productId: product.id
-                }));
-                await ProductSize.bulkCreate(newSizeRecords, { transaction });
+                if (addedSizes.length > 0) {
+                    const newSizeRecords = addedSizes.map(size => ({ size, productId: product.id }));
+                    await ProductSize.bulkCreate(newSizeRecords, { transaction });
+                }
             };
         };
         //Commit trước khi gửi event
@@ -224,18 +227,17 @@ const updateProductService = async (id, { name, description, price, category_id,
         const channel = getChannel();
         if (sizeChanged) {
             // Nếu thay đổi size → gửi product.updated
-            const productSizes = await ProductSize.findAll({
+            const allSizes = await ProductSize.findAll({
                 where: { productId: product.id },
                 attributes: ["id", "size"]
             });
             const eventPayload = {
                 productId: product.id,
                 name: product.name,
-                sizes: productSizes.map(s => ({
-                    id: s.id,
-                    size: s.size
-                })),
-                oldSize: oldSizes
+                price: product.price,
+                deletedSizeIds: deletedSizes.map(s => s.id),
+                addedSizes: allSizes.filter(s => addedSizes.includes(s.size)),
+                keptSizes: allSizes.filter(s => keptSizes.map(k => k.size).includes(s.size))
             };
             await channel.publish(
                 "product_exchange",
@@ -248,6 +250,8 @@ const updateProductService = async (id, { name, description, price, category_id,
             const eventPayload = {
                 productId: product.id,
                 name: product.name,
+                price: product.price,
+                sizes: product.sizes
             };
             await channel.publish(
                 "product_exchange",

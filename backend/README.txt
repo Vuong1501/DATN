@@ -163,12 +163,18 @@ nếu ở trang khác thì cần thêm id lấy tồn kho cho 1 size đó
 
 đang đến  api thêm giỏ hàng (chat gpt làm cart-service)
 
-1. Thêm sản phẩm vào giỏ hàng (xong)
+1. Thêm sản phẩm vào giỏ hàng         (xong)
 2. Lấy danh sách giỏ hàng
-3. Cập nhật tick chọn (selected)(xong)
-4. Cập nhật số lượng sản phẩm(xong)
-5. Xóa sản phẩm khỏi giỏ hàng
+3. Cập nhật tick chọn (selected)      (xong)
+4. Cập nhật số lượng sản phẩm         (xong)
+5. Xóa sản phẩm khỏi giỏ hàng         (xong)
 6. Lấy danh sách sản phẩm được chọn (để đặt hàng)
 7. Xóa toàn bộ giỏ hàng (sau khi đặt hàng xong)
 
 
+hiện tại đang làm theo cách nếu update size mới thì chỉ xóa và thêm các size
+cần thiêt và giữ nguyên size để không mất tồn kho
+
+
+nếu 1 size nào đó đã lên đơn, nhưng sau đó size đó bị xóa thì sao
+vẫn ship nốt hay báo hủy ?

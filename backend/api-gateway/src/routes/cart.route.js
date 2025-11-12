@@ -10,6 +10,7 @@ router.post("/add", authMiddleware, proxyRequest(cartService));
 router.put("/updateQuantity/:cartItemId", authMiddleware, proxyRequest(cartService));
 router.patch("/:id/select", authMiddleware, proxyRequest(cartService));
 router.delete("/:cartItemId", authMiddleware, proxyRequest(cartService));
+router.get("/getAll", authMiddleware, proxyRequest(cartService));
 
 
 
