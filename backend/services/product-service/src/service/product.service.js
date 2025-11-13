@@ -279,6 +279,7 @@ const updateProductService = async (id, { name, description, price, category_id,
         throw error;
     }
 };
+
 const getAllProductService = async (page = 1, limit = 10) => {
     const offset = (page - 1) * limit;
     // Lấy danh sách sản phẩm

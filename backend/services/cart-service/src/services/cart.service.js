@@ -1,6 +1,5 @@
 import { Cart, CartItem } from "../models/index.js";
 import { getRedis } from "../../common/redis/redis.js";
-import { getChannel } from "../../common/rabbitmq/rabbitmq.js";
 
 const addCartService = async (userId, productId, sizeId, parsedQuantity) => {
     // kiểm tra giỏ hàng của user
@@ -106,12 +105,13 @@ const getAllService = async (userId) => {
             quantity: item.quantity,
             selected: item.isSelected,
             stock,
+            isDeleted: item.isDeleted !== false,
             total: item.quantity * (item.price || 0)
         });
     };
     // 6️⃣ Tính tổng tiền sản phẩm được chọn
     const totalSelected = result
-        .filter(i => i.selected)
+        .filter(i => i.selected && i.isDeleted)
         .reduce((sum, i) => sum + i.total, 0);
 
     return {

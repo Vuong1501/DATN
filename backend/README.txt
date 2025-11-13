@@ -178,3 +178,12 @@ cần thiêt và giữ nguyên size để không mất tồn kho
 
 nếu 1 size nào đó đã lên đơn, nhưng sau đó size đó bị xóa thì sao
 vẫn ship nốt hay báo hủy ?
+
+
+Mai Xem
+-hiện tại bên cart đang xem xét xem có cần consume ko hay chỉ cần lấy từ redis ra(đọc trong giải thích updateProductService)
+khả năng là không cần
+- thay đổi cái tên size không rõ sang gắn thêm cờ
+-tính tống giá đã selected ở api nào
+
+size m đang là 285

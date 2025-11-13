@@ -7,7 +7,8 @@ const CartItem = sequelize.define("CartItem", {
     productId: { type: DataTypes.INTEGER, allowNull: false },
     productSizeId: { type: DataTypes.INTEGER, allowNull: false },
     quantity: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
-    isSelected: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
+    isSelected: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    isDeleted: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
 }, {
     tableName: "cart_items",
     timestamps: true,

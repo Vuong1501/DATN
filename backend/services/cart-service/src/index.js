@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import sequelize from "./config/db.js";
 import { connectRedis } from "../common/redis/redis.js";
 import { connectRabbitMQ } from "../common/rabbitmq/rabbitmq.js";
+import { consumeProductEvent } from "./services/cartConsumer.js";
 import cartRouter from "./routes/cart.route.js";
 
 const app = express();
@@ -32,6 +33,7 @@ async function startServer() {
         await sequelize.sync({ alter: isDev });
         await connectRedis(REDIS_URL);
         await connectRabbitMQ(RABBITMQ_URL);
+        await consumeProductEvent();
 
         console.log("NODE_ENV =", process.env.NODE_ENV);
 
