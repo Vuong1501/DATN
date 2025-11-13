@@ -1,5 +1,6 @@
 import { Cart, CartItem } from "../models/index.js";
 import { getRedis } from "../../common/redis/redis.js";
+import { Op } from "sequelize";
 
 const addCartService = async (userId, productId, sizeId, parsedQuantity) => {
     // kiểm tra giỏ hàng của user
@@ -121,4 +122,19 @@ const getAllService = async (userId) => {
     };
 };
 
-export { addCartService, updateItemSelectedService, updateQuantityService, deleteItemService, getAllService };
+const deleteAfterPurchaseService = async (cartItemIds, userId) => {
+
+    const cart = await Cart.findOne({
+        where: { userId }
+    });
+    if (!cart) return 0;
+    const result = await CartItem.destroy({
+        where: {
+            id: { [Op.in]: cartItemIds },
+            cartId: cart.id,
+        }
+    });
+    return result;
+};
+
+export { addCartService, updateItemSelectedService, updateQuantityService, deleteItemService, getAllService, deleteAfterPurchaseService };

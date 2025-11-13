@@ -1,4 +1,7 @@
-import { addCartService, updateItemSelectedService, updateQuantityService, deleteItemService, getAllService } from "../services/cart.service.js";
+import {
+    addCartService, updateItemSelectedService, updateQuantityService,
+    deleteItemService, getAllService, deleteAfterPurchaseService
+} from "../services/cart.service.js";
 
 const addCartController = async (req, res) => {
     try {
@@ -94,6 +97,30 @@ const getAllController = async (req, res) => {
             error: error.message
         });
     }
+};
+
+const deleteAfterPurchaseController = async (req, res) => {
+    try {
+        const userId = req.headers["x-user-id"];
+        const { cartItemIds } = req.body;
+        if (!cartItemIds || !Array.isArray(cartItemIds) || cartItemIds.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Danh sách cartItemIds không hợp lệ",
+            });
+        };
+        const result = await deleteAfterPurchaseService(cartItemIds, userId);
+        return res.status(200).json({
+            success: true,
+            message: `Đã xóa ${result} sản phẩm khỏi giỏ hàng sau khi đặt hàng`,
+        });
+    } catch (error) {
+        console.error("Lỗi khi xóa sản phẩm sau khi đặt hàng:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Lỗi server khi xóa sản phẩm khỏi giỏ hàng",
+        });
+    }
 }
 
-export { addCartController, updateItemSelectedController, updateQuantityController, deleteItemController, getAllController };
+export { addCartController, updateItemSelectedController, updateQuantityController, deleteItemController, getAllController, deleteAfterPurchaseController };

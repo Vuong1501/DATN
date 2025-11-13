@@ -160,8 +160,10 @@ mai xem phần cache thông tin sản phẩm ở tạo và xóa bên consume
 xem xem nên thiết kế ở trang cập nhật tồn kho thì cập nhật ở trang đó luôn hay ở trang khác
 nếu ở trang khác thì cần thêm id lấy tồn kho cho 1 size đó
 
-
 đang đến  api thêm giỏ hàng (chat gpt làm cart-service)
+
+
+cart, inventory đang lắng nghe sự kiện thêm sửa xóa của product
 
 1. Thêm sản phẩm vào giỏ hàng         (xong)
 2. Lấy danh sách giỏ hàng             (xong)
@@ -178,11 +180,3 @@ cần thiêt và giữ nguyên size để không mất tồn kho
 nếu 1 size nào đó đã lên đơn, nhưng sau đó size đó bị xóa thì sao
 vẫn ship nốt hay báo hủy ?
 
-
-Mai Xem
--hiện tại bên cart đang xem xét xem có cần consume ko hay chỉ cần lấy từ redis ra(đọc trong giải thích updateProductService)
-khả năng là không cần
-- thay đổi cái tên size không rõ sang gắn thêm cờ
--tính tống giá đã selected ở api nào
-
-size m đang là 28

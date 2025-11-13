@@ -11,6 +11,7 @@ router.put("/updateQuantity/:cartItemId", authMiddleware, proxyRequest(cartServi
 router.patch("/:id/select", authMiddleware, proxyRequest(cartService));
 router.delete("/:cartItemId", authMiddleware, proxyRequest(cartService));
 router.get("/getAll", authMiddleware, proxyRequest(cartService));
+router.post("/deleteAfterPurchase", authMiddleware, proxyRequest(cartService));
 
 
 
