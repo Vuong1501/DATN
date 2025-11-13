@@ -164,12 +164,11 @@ nếu ở trang khác thì cần thêm id lấy tồn kho cho 1 size đó
 đang đến  api thêm giỏ hàng (chat gpt làm cart-service)
 
 1. Thêm sản phẩm vào giỏ hàng         (xong)
-2. Lấy danh sách giỏ hàng
+2. Lấy danh sách giỏ hàng             (xong)
 3. Cập nhật tick chọn (selected)      (xong)
 4. Cập nhật số lượng sản phẩm         (xong)
 5. Xóa sản phẩm khỏi giỏ hàng         (xong)
-6. Lấy danh sách sản phẩm được chọn (để đặt hàng)
-7. Xóa toàn bộ giỏ hàng (sau khi đặt hàng xong)
+7. Xóa toàn bộ giỏ hàng (sau khi đặt hàng xong) cần làm
 
 
 hiện tại đang làm theo cách nếu update size mới thì chỉ xóa và thêm các size
@@ -186,4 +185,4 @@ khả năng là không cần
 - thay đổi cái tên size không rõ sang gắn thêm cờ
 -tính tống giá đã selected ở api nào
 
-size m đang là 285
+size m đang là 28

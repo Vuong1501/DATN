@@ -106,12 +106,12 @@ const getAllService = async (userId) => {
             selected: item.isSelected,
             stock,
             isDeleted: item.isDeleted !== false,
-            total: item.quantity * (item.price || 0)
+            total: item.quantity * (productInfo.price || 0)
         });
     };
     // 6️⃣ Tính tổng tiền sản phẩm được chọn
     const totalSelected = result
-        .filter(i => i.selected && i.isDeleted)
+        .filter(i => i.selected && !i.isDeleted)
         .reduce((sum, i) => sum + i.total, 0);
 
     return {
