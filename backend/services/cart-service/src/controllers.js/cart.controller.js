@@ -24,10 +24,11 @@ const addCartController = async (req, res) => {
 
 const updateItemSelectedController = async (req, res) => {
     try {
+        const { userId } = req.headers["x-user-id"];
         const { id } = req.params;
         const { selected } = req.body;
 
-        await updateItemSelectedService(id, selected);
+        await updateItemSelectedService(id, selected, userId);
 
         res.json({ message: "Cập nhật trạng thái thành công" })
     } catch (error) {
@@ -38,6 +39,7 @@ const updateItemSelectedController = async (req, res) => {
 
 const updateQuantityController = async (req, res) => {
     try {
+        const { userId } = req.headers["x-user-id"];
         const { cartItemId } = req.params;
         const { quantity } = req.body;
         // Kiểm tra dữ liệu hợp lệ
@@ -46,7 +48,7 @@ const updateQuantityController = async (req, res) => {
         }
         const parsedQuantity = parseInt(quantity, 10);
 
-        const result = await updateQuantityService(cartItemId, parsedQuantity);
+        const result = await updateQuantityService(cartItemId, parsedQuantity, userId);
 
         return res.status(200).json({
             success: true,
@@ -64,8 +66,9 @@ const updateQuantityController = async (req, res) => {
 
 const deleteItemController = async (req, res) => {
     try {
+        const { userId } = req.headers["x-user-id"];
         const { cartItemId } = req.params;
-        await deleteItemService(cartItemId);
+        await deleteItemService(cartItemId, userId);
         return res.status(200).json({
             success: true,
             message: "Đã xóa sản phẩm khỏi giỏ hàng"

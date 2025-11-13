@@ -35,7 +35,12 @@ const addCartService = async (userId, productId, sizeId, parsedQuantity) => {
     return item;
 };
 
-const updateItemSelectedService = async (id, selected) => {
+const updateItemSelectedService = async (id, selected, userId) => {
+    const cart = await Cart.findOne({
+        where: { userId }
+    })
+    if (!cart) throw new Error("Không tìm thấy giỏ hàng của người dùng");
+
     const item = await CartItem.findByPk(id);
     if (!item) throw new Error("Không tìm thấy sản phẩm trong giỏ hàng");
 
@@ -44,7 +49,12 @@ const updateItemSelectedService = async (id, selected) => {
     return item;
 };
 
-const updateQuantityService = async (cartItemId, parsedQuantity) => {
+const updateQuantityService = async (cartItemId, parsedQuantity, userId) => {
+    const cart = await Cart.findOne({
+        where: { userId }
+    })
+    if (!cart) throw new Error("Không tìm thấy giỏ hàng của người dùng");
+
     const item = await CartItem.findByPk(cartItemId);
     if (!item) {
         throw new Error("Không tìm thấy sản phẩm trong giỏ hàng.");
@@ -56,7 +66,12 @@ const updateQuantityService = async (cartItemId, parsedQuantity) => {
     return item;
 };
 
-const deleteItemService = async (cartItemId) => {
+const deleteItemService = async (cartItemId, userId) => {
+    const cart = await Cart.findOne({
+        where: { userId }
+    })
+    if (!cart) throw new Error("Không tìm thấy giỏ hàng của người dùng");
+
     const item = await CartItem.findByPk(cartItemId);
     if (!item) {
         throw new Error("Không tìm thấy sản phẩm trong giỏ hàng.");
