@@ -173,10 +173,38 @@ cart, inventory đang lắng nghe sự kiện thêm sửa xóa của product
 7. Xóa toàn bộ giỏ hàng (sau khi đặt hàng xong) cần làm
 
 
+order-service
+1. Tạo đơn hàng
+2. Lấy danh sách đơn hàng của user, User xem tất cả các đơn họ đã đặt.
+3. Xem chi tiết đơn hàng
+User click vào 1 đơn → xem trạng thái, sản phẩm, tổng tiền, ngày đặt,…
+4. Theo dõi trạng thái đơn hàng
+Phần này nằm trong API ở trên, nhưng có thể tách riêng nếu muốn.
+5. Admin cập nhật trạng thái đơn hàng
+6. Lấy danh sách đơn hàng (QUẢN TRỊ - Admin)
+7. Hủy đơn hàng
+User có thể hủy đơn nếu đơn còn ở trạng thái:
+pending
+confirmed
+8. Kiểm tra giỏ hàng trước khi tạo đơn (nếu muốn chuẩn)
+Trước khi tạo đơn:
+Kiểm tra số lượng hàng tồn trong Inventory service
+Kiểm tra sản phẩm có bị xóa chưa
+Giá có thay đổi không
+(Option nhưng thể hiện kỹ năng microservice)
+9. Giảm số lượng tồn kho sau khi xác nhận đơn
+Tuỳ chiến lược:
+Giảm tồn kho khi tạo đơn
+Hoặc khi admin “confirmed” đơn
+(Shop lớn thì giảm khi thanh toán → nhưng đồ án tùy chọn)
+
+
 hiện tại đang làm theo cách nếu update size mới thì chỉ xóa và thêm các size
 cần thiêt và giữ nguyên size để không mất tồn kho
 
 
 nếu 1 size nào đó đã lên đơn, nhưng sau đó size đó bị xóa thì sao
 vẫn ship nốt hay báo hủy ?
+
+đang đến đoạn phân vân xem dùng api dev của giao hàng nhanh, giao hàng tiết kiệm hay tự làm
 

@@ -123,6 +123,19 @@ services:
       - rabbitmq
     networks:
       - mynet
+  order-service:
+    build:
+      context: ./services/order-service
+      target: prod
+    ports:
+      - "3007:3007"
+    env_file:
+      - ./services/order-service/.env
+    depends_on:
+      - redis
+      - rabbitmq
+    networks:
+      - mynet
 networks:
   mynet:
     driver: bridge

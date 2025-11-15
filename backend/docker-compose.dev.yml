@@ -86,3 +86,16 @@ services:
       - "3006:3006"
     environment:
       NODE_ENV: development
+
+  order-service:
+    build:
+      context: ./services/order-service
+      target: dev
+    volumes:
+      - ./services/order-service/src:/app/src
+      - ./common:/app/common
+    command: npm run dev
+    ports:
+      - "3007:3007"
+    environment:
+      NODE_ENV: development
