@@ -24,7 +24,8 @@ const addCartController = async (req, res) => {
 
 const updateItemSelectedController = async (req, res) => {
     try {
-        const { userId } = req.headers["x-user-id"];
+        const userId = req.headers["x-user-id"];
+
         const { id } = req.params;
         const { selected } = req.body;
 

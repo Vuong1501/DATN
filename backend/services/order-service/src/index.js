@@ -5,7 +5,7 @@ import sequelize from "./config/db.js";
 import { connectRedis } from "../common/redis/redis.js";
 import { connectRabbitMQ } from "../common/rabbitmq/rabbitmq.js";
 // import { consumeProductEvent } from "./services/cartConsumer.js";
-// import cartRouter from "./routes/cart.route.js";
+import orderRouter from "./routes/order.route.js";
 
 const app = express();
 
@@ -23,7 +23,7 @@ app.use(cors({
 }));
 app.use(cookieParser());
 
-// app.use("/cart", cartRouter);
+app.use("/order", orderRouter);
 
 async function startServer() {
     try {
@@ -39,7 +39,7 @@ async function startServer() {
 
 
         app.listen(PORT, () => {
-            console.log(`cart service running on port ${PORT}`);
+            console.log(`order service running on port ${PORT}`);
         });
     } catch (err) {
         console.error("Failed to start service:", err);

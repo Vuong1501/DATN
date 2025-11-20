@@ -170,7 +170,7 @@ cart, inventory đang lắng nghe sự kiện thêm sửa xóa của product
 3. Cập nhật tick chọn (selected)      (xong)
 4. Cập nhật số lượng sản phẩm         (xong)
 5. Xóa sản phẩm khỏi giỏ hàng         (xong)
-7. Xóa toàn bộ giỏ hàng (sau khi đặt hàng xong) cần làm
+7. Xóa toàn bộ giỏ hàng (sau khi đặt hàng xong) cần làm (xong)
 
 
 order-service
@@ -208,3 +208,94 @@ vẫn ship nốt hay báo hủy ?
 
 đang đến đoạn phân vân xem dùng api dev của giao hàng nhanh, giao hàng tiết kiệm hay tự làm
 
+lấy user id ở đâu, name User
+các dữ liệu kia lấy từ cache hay từ getall cart trả ra
+kiểm tra tồn kho
+có lấy từ rest đề phòng 
+có phải public event nào ra không
+ở NotificationService có lắng nghe sự kiện đặt hàng thành công
+có demo tình huống flashsale thì có phải ở tạo đơn hàng này không
+validate các số điện thoaijm địa chỉ, ... và giao diện đặt hàng như nào
+
+
+
+
+Trong môi trường bình thường (non-flash-sale)
+→ chỉ cần transaction DB + check tồn kho.
+
+Nhưng FLASH SALE hàng trăm ngàn request thì cách dùng đúng là:
+✔ Cách tốt nhất: RabbitMQ + Queue để xử lý tuần tự
+Flow chuẩn:
+
+User nhấn MUA → FE gửi request → API trả về “đang xử lý”.
+API publish event vào queue: order.flashsale.request
+Worker nhận từng request trong hàng đợi:
+kiểm tra tồn kho (Redis hoặc DB)
+atomic decrement
+tạo order
+Trả kết quả về user qua WebSocket hoặc polling.
+
+
+
+dữ liệu địa chỉ, số điện thoại là người dùng nhập
+
+1. Mở trang giỏ hàng(khi này gọi api lấy danh sách giỏ hàng ra kèm các sản phẩm được chọn + tổng giá)
+2. người dùng ấn mua hàng => chuyển sang màn hình checkout, khi này mang theo các sản phẩm được tick chọn(state nội bộ để mang theo dữ liệu)
+3. màn hình checkout hiển thị 
+-danh sách sản phẩm được chọn
+-form nhập địa chỉ (sau này có thể để làm mặc định như tiktok)
+-ghi chú
+4. bấm đặt hàng
+- gọi api tạo đơn hàng, nhưng cần gọi api cart-service vì không tin dữ liệu fe gửi lên vì có thể bị hack
+ 4.1 gọi sang cart-service lấy giỏ hàng chuẩn
+ 4.2 lọc sản phẩm có selected = true
+ 4.3 lấy dữ liệu thật từ redis hoặc rest sang product-service
+ 4.4 check tồn kho(flash sale thì dùng rabbit + atomic của redis hoặc transaction)
+ 4.5 tạo đơn hàng + orderDetail (snapshot)
+ 4.6 gửi event giảm tồn kho
+ 4.7 gọi api bên cart-service để xóa các sản phẩm đã mua trong giỏ hàng
+
+
+
+CHÚ Ý: 
+Tại sao phải gọi lại /cart khi ấn đặt hàng?
+Vì:
+▶ Người dùng có thể mở 2 tab
+Tab A: bỏ chọn item
+Tab B: nhấn đặt hàng → không đúng/không khớp.
+▶ Người dùng có thể refresh giỏ hàng
+Frontend cache không còn đúng.
+▶ Giỏ hàng có thể thay đổi sau khi mở checkout
+Số lượng không còn đúng.
+
+
+
+
+các sự kiện đang được gửi
+- USER-SERVICE đang gửi exchange notification_exchange với type là direct, routing key là forgot_password
+=> NOTIFICATION-SERVICE đang lắng nghe 
+1. exchange notification_exchange với type là direct, routing key là forgot_password
+2. exchange notification_exchange với type là direct, routing key là order_success
+
+- PRODUCT-SERVICE đang gửi exchange product_exchange, với type là topic với các key là thêm sửa xóa sản phẩm
+ => bên INVENTORY-SERVICE đang lắng nghe các sự kiện đó
+- CATEGORY-SERVICE đang gửi exchange category_events với type là fanout với các key là thêm sửa xóa danh muc
+ => bên PRODUCT-SERVICE đang lắng nghe các sự kiện đó
+
+
+ -nếu tách flashsale ra service riêng thì khi chi tiết sản phẩm có thể hiển thị giá gốc,
+ giá flash sale, thời gian đếm ngược
+
+
+
+khi tạo đơn hàng thành công thì bên order-serivce cần bắn event sang inventory để giảm tồn kho sản phẩm đó
+trong redis cũng như db
+và bắn sang NotificationService để thông báo cho người dùng đặt hàng thành công
+
+mai xem gpt quy trình tháng thái đơn hàng , sau đó là fix undefined price
+
+
+
+trong sự kiện tạo đơn hàng order => inventory đã xử lí 
++ nếu nhận sự kiện lỗi sẽ không bị giảm stock nhiều lần cùng 1 trường hợp
++ trường hợp redis giảm nhưng đến khi giảm db thì bị lỗi dẫn đến lệch dữ liệu
