@@ -215,7 +215,7 @@ const logoutService = async (res) => {
 const getCurrentUserService = async (userId) => {
     try {
         const user = await User.findByPk(userId, {
-            attributes: ['id', 'username', 'role', 'provider'],
+            attributes: ['id', 'email', 'username', 'role', 'provider'],
             raw: true
         });
         if (!user) throw new Error("User không tồn tại");

@@ -3,7 +3,8 @@ import { getRedis } from "../../common/redis/redis.js";
 import { getChannel } from "../../common/rabbitmq/rabbitmq.js";
 import axios from "axios";
 
-const CART_SERVICE_URL = "http://cart-service:3006/cart"
+const CART_SERVICE_URL = "http://cart-service:3006/cart";
+
 
 const createOrderService = async (payload) => {
     const { userId, cartItemIds, phone, userName, address, ward, district, province, note } = payload;
@@ -93,17 +94,18 @@ const createOrderService = async (payload) => {
 
         // gửi sự kiện sang các service khác
         const channel = await getChannel();
-        // 1. gửi sang inventory service để trừ tồn kho
         const payload = {
             orderId: order.id,
-            items: orderDetail.map(item => ({
+            userId,
+            items: orderDetail.map((item, index) => ({
                 productSizeId: item.productSizeId,
-                quantity: item.quantity
-            }))
-        };
-        channel.publish("inventory_exchange", "inventory.decrease", Buffer.from(JSON.stringify(payload)
-        ));
-        // 2. gửi sang notification service để mail cho khách là đã đặt hàng thành công
+                quantity: item.quantity,
+                cartItemId: orderCandidates[index].cartItemId
+            })),
+        }
+        // console.log("test >>>>>>", payload);
+
+        channel.publish("inventory_exchange", "order.created", Buffer.from(JSON.stringify(payload)));
     } catch (error) {
         console.error("Publish event failed:", error);
     }

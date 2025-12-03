@@ -1,5 +1,6 @@
 import { getChannel } from "../../common/rabbitmq/rabbitmq.js";
 import dotenv from "dotenv";
+import axios from "axios";
 import { sendMail } from "../email/emailService.js";
 
 dotenv.config();
@@ -9,6 +10,9 @@ const QUEUE = "notification_queue";
 const DLX_QUEUE = "notification_queue_dead";
 const RETRY_QUEUE = "notification_queue_retry";
 const RETRY_DELAY = 3000;
+
+const USER_SERVICE_URL = "http://user-service:3001/users";
+
 const handleRetry = (channel, msg, content) => {
 
     const retries = msg.properties.headers?.retries || 0;
@@ -67,8 +71,17 @@ export const startConsumer = async () => {
             try {
                 switch (content.type) {
                     case "forgot_password":
-                    case "order_success":
                         await sendMail(content.to, content.subject, content.html);
+                        break;
+                    case "order_success":
+                        // lấy email từ user-service
+                        const response = await axios.get(`${USER_SERVICE_URL}/auth/me`, { headers: { "x-user-id": content.userId } });
+                        const email = response.data.user.email;
+                        const subject = `Đặt hàng thành công #${content.orderId}`;
+                        const html = `Đơn hàng của bạn đã được xác nhận.<br>
+                              Sản phẩm:<br>
+                              ${content.orderDetail.map(i => `Size ${i.productSizeId}: ${i.quantity}`).join("<br>")}`;
+                        await sendMail(email, subject, html);
                         break;
                     default:
                         console.warn("Unknown mail type:", content.type);

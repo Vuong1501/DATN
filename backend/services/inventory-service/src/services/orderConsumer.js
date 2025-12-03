@@ -38,14 +38,14 @@ const consumeInventoryDecrease = async () => {
 
     //Queue chính
     await channel.assertQueue(QUEUE, { durable: true });
-    await channel.bindQueue(QUEUE, EXCHANGE, "inventory.decrease");
+    await channel.bindQueue(QUEUE, EXCHANGE, "order.created");
 
     //Retry quêu
     await channel.assertQueue(RETRY_QUEUE, {
         durable: true,
         messageTtl: RETRY_DELAY,
         deadLetterExchange: EXCHANGE,
-        deadLetterRoutingKey: "inventory.decrease"
+        deadLetterRoutingKey: "order.created"
     });
 
     // DLQ
@@ -54,25 +54,20 @@ const consumeInventoryDecrease = async () => {
     channel.consume(QUEUE, async (msg) => {
         if (!msg) return;
         const data = JSON.parse(msg.content.toString());
-        const event = msg.fields.routingKey;
-        if (!data.event) {
-            data.event = event;
-        }
-        console.log("Received message:", { event, data });
+        const { orderId, userId, items } = data;
+        console.log("Received order.created:", orderId);
 
         // mảng lưu những thay đổi của redis, phòng khi redis giảm, db không giảm gây lệch dữ liệu
         let undone = [];
         try {
-            const { orderId, items } = data;
-
-            // //tạo 1 cờ để đánh dấu, tránh trường hợp xử lí lỗi mà trừ stock nhiều lần
+            // tạo 1 cờ để đánh dấu, tránh trường hợp xử lí lỗi mà trừ stock nhiều lần(idempotency key)
             const processedKey = `inventory:order_processed:${orderId}`;
             const alreadyProcessed = await redis.get(processedKey);
             if (alreadyProcessed) {
                 console.log(`Order #${orderId} đã xử lý trước đó, bỏ qua`);
                 return channel.ack(msg);
             }
-
+            //Giảm redis
             for (const item of items) {
                 const stockKey = `inventory:productSize:${item.productSizeId}`;
                 const currentStock = await redis.get(stockKey);
@@ -107,7 +102,10 @@ const consumeInventoryDecrease = async () => {
                     `DB decreased: size=${item.productSizeId}, qty=${item.quantity}`
                 );
             };
-            // await redis.set(processedKey, 1, { EX: 3600 }); // lưu 1h, tránh trừ trùng 
+            await redis.set(processedKey, 1, { EX: 3600 }); // lưu 1h, tránh trừ trùng 
+            // publish sự kiện trừ tồn kho thành công sang lại bên order-service
+            channel.publish(EXCHANGE, "stock.decreased", Buffer.from(JSON.stringify({ orderId, userId, items })));
+            console.log(`Inventory decreased for order ${orderId}`);
             channel.ack(msg);
         } catch (error) {
             console.error("Error processing order.created:", error);
@@ -118,6 +116,12 @@ const consumeInventoryDecrease = async () => {
                     console.log(`Redis rollback: ${u.stockKey} +${u.qty}`);
                 }
             }
+
+            //publish sự kiện trừ không thành công sang bên order
+            channel.publish(EXCHANGE, "stock.failed", Buffer.from(JSON.stringify({
+                orderId,
+                reason: error.message
+            })))
             await handleRetry(channel, msg, data);
         };
     });

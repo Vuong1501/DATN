@@ -299,3 +299,27 @@ mai xem gpt quy trình tháng thái đơn hàng , sau đó là fix undefined pri
 trong sự kiện tạo đơn hàng order => inventory đã xử lí 
 + nếu nhận sự kiện lỗi sẽ không bị giảm stock nhiều lần cùng 1 trường hợp
 + trường hợp redis giảm nhưng đến khi giảm db thì bị lỗi dẫn đến lệch dữ liệu
+
+
+
+cập nhật trạng thái sản phẩm đang bị cập nhật được của người khác
+
+sản phẩm trong giỏ hàng đang lỗi vì không đủ stock, nhưng vẫn gửi mail đặt hàng thànhc
+công và log ra là đặt hàng thành công
+
+
+luồng đặt hàng đang như sau 
+-khi đặt hàng, bên order sẽ kiểm tra tồn kho xem đủ không, nếu đủ thì sẽ tạo đơn hàng và bắn sự 
+kiện order.created sang bên inventory để trừ tôn kho(nếu thành công thì bên inventory sẽ publish
+lại sự kiện stock.decresed sang bên order để order biết, nếu fail thì bắn sự kiện stock.fail sang bên order)
+-sau khi order-service nhận lại sự kiện từ inventory, nếu thành công thì sẽ gửi sự kiện sang bên 
+notification để gửi mail đặt hàng thành công cho khách
+
+
+
+test luồng order(đã test xong đặt hàng thành công, còn đặt hàng thất bại xem có bị lệch redis với db không)
+
+
+bây giờ luồng đặt hàng đang như sau, nếu trường hợp bình thường thì chỉ cần tính atomic cơ bản của redis
+như là dùng decr thôi, sau đó mới giảm trong db
+còn khi vào tình huống flashsale thì các request đến phải đi vào rabbit trước để xử lí tuần tự

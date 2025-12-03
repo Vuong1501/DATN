@@ -87,7 +87,7 @@ const getAllService = async (userId) => {
 
     // lấy toàn bộ items trong giỏ hàng
     const cartItems = await CartItem.findAll({ where: { cartId: cart.id } });
-    console.log("cartItems>>>", cartItems);
+    // console.log("cartItems>>>", cartItems);
 
     const result = [];
     const redis = getRedis();
@@ -98,7 +98,7 @@ const getAllService = async (userId) => {
         let productInfo = null;
         if (productCache) {
             productInfo = JSON.parse(productCache);
-            console.log("thông tin sản phẩm khi lấy danh sách >>>", productInfo);
+            // console.log("thông tin sản phẩm khi lấy danh sách >>>", productInfo);
 
         } else {
             // fallback: trường hợp cache mất, có thể gọi REST sang product-service
