@@ -99,3 +99,16 @@ services:
       - "3007:3007"
     environment:
       NODE_ENV: development
+
+  flash-sale-service:
+    build:
+      context: ./services/flash-sale-service
+      target: dev
+    volumes:
+      - ./services/flash-sale-service/src:/app/src
+      - ./common:/app/common
+    command: npm run dev
+    ports:
+      - "3008:3008"
+    environment:
+      NODE_ENV: development

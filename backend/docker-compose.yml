@@ -136,6 +136,20 @@ services:
       - rabbitmq
     networks:
       - mynet
+
+  flash-sale-service:
+    build:
+      context: ./services/flash-sale-service
+      target: prod
+    ports:
+      - "3008:3008"
+    env_file:
+      - ./services/flash-sale-service/.env
+    depends_on:
+      - redis
+      - rabbitmq
+    networks:
+      - mynet
 networks:
   mynet:
     driver: bridge

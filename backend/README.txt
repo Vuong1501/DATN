@@ -112,9 +112,6 @@ E -->|Fail| H[Emit socket 'fail']
 
 G --> I[NotificationService consumer gửi mail xác nhận]
 
-
--- KHI NÀO LÀM ĐẾN ĐOẠN ORDER_SUCCESS THÌ XEM FILE NOTIFICATION.CONSUMER.JS
-
 -----------------------------------------------------------------RABBITMQ--------------------------------------------------------------------------------
 - Hiện tại bên categoryService đang publish sự kiện thêm, xóa danh mục sang bên product(product đang nhận)
 - bên user-service đang publish sự kiện gửi mail sang cho NotificationService (đang có sẵn mail order_success)
@@ -292,20 +289,10 @@ khi tạo đơn hàng thành công thì bên order-serivce cần bắn event san
 trong redis cũng như db
 và bắn sang NotificationService để thông báo cho người dùng đặt hàng thành công
 
-mai xem gpt quy trình tháng thái đơn hàng , sau đó là fix undefined price
-
-
-
-trong sự kiện tạo đơn hàng order => inventory đã xử lí 
-+ nếu nhận sự kiện lỗi sẽ không bị giảm stock nhiều lần cùng 1 trường hợp
-+ trường hợp redis giảm nhưng đến khi giảm db thì bị lỗi dẫn đến lệch dữ liệu
-
 
 
 cập nhật trạng thái sản phẩm đang bị cập nhật được của người khác
 
-sản phẩm trong giỏ hàng đang lỗi vì không đủ stock, nhưng vẫn gửi mail đặt hàng thànhc
-công và log ra là đặt hàng thành công
 
 
 luồng đặt hàng đang như sau 
@@ -316,10 +303,20 @@ lại sự kiện stock.decresed sang bên order để order biết, nếu fail 
 notification để gửi mail đặt hàng thành công cho khách
 
 
-
-test luồng order(đã test xong đặt hàng thành công, còn đặt hàng thất bại xem có bị lệch redis với db không)
-
-
 bây giờ luồng đặt hàng đang như sau, nếu trường hợp bình thường thì chỉ cần tính atomic cơ bản của redis
 như là dùng decr thôi, sau đó mới giảm trong db
 còn khi vào tình huống flashsale thì các request đến phải đi vào rabbit trước để xử lí tuần tự
+
+
+
+đã hoàn thiện luồng đặt hàng khi bình thường, bên order-service kiểm tra tồn kho Trước
+=> tạo đơn hàng=> publish sự kiện order.created sang
+-cart-service: để xóa item đó trong giỏ hàng sau khi đặt thành công
+-inventory-service: để trừ tồn kho trong redis và db(đã có rollback nếu lỗi) => publish lại order-service
+=> nhận và cập nhật trạng thái đơn hàng đó => publish sang notification để gửi mail
+
+
+🧠 Bạn nên dùng thêm 1 trick:
+SETNX key “đang xử lý”
+
+→ để cùng 1 user không spam nút mua 20 lần trong 1 giây.
