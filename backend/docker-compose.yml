@@ -27,7 +27,7 @@ services:
   api-gateway:
     build: ./api-gateway
     ports:
-      - "8080:8080"
+      - "9090:8080"
     env_file:
       - ./api-gateway/.env
     depends_on:

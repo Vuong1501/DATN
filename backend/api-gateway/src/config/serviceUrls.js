@@ -4,5 +4,6 @@ export default {
     category: process.env.CATEGORY_SERVICE_URL,
     inventory: process.env.INVENTORY_SERVICE_URL,
     cart: process.env.CART_SERVICE_URL,
-    order: process.env.ORDER_SERVICE_URL
+    order: process.env.ORDER_SERVICE_URL,
+    flashsale: process.env.FLASHSALE_SERVICE_URL
 };

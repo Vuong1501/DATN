@@ -320,3 +320,95 @@ còn khi vào tình huống flashsale thì các request đến phải đi vào r
 SETNX key “đang xử lý”
 
 → để cùng 1 user không spam nút mua 20 lần trong 1 giây.
+
+
+mai xem phần email sending error debug ở gpt
+
+
+
+bên flashsale sẽ gửi exchange flash_exchange, routing key là flash.order(type topic)
+bên order-service lắng nghe để tạo đơn hàng(riêng) => publish sự kiện sang inventory(giống luồng bình thường)
+
+
+
+khi flash-sale bắn sự kiện sang bên order-service, nó lắng nghe và tạo ra 1 bản ghi gọi là đặt chỗ (có thể
+thêm 1 bảng nữa cho order-service), sau đó mới nhập thông tin địa chỉ, người nhận rồi 
+mới tạo đơn hàng thật sự => sau đó publish sang inventory như bình thường
+
+khi ấn mua ngay ở flash sale thì gọi api buy bên flash sale, sau khi điền thông tin 
+địa chỉ thì gọi thêm 1 api nữa(chưa có) để thực sự đặt hàng(thêm 1 bảng nữa trong order-service)
+
+Nếu muốn làm giống Shopee/Tiki/Lazada:
+
+➡ Cách 2: Preload trước giờ sale (cron job)
+→ Đây là cách chuẩn, tối ưu hiệu năng.
+
+với trường hợp nếu đã cache xong rồi mà admin sửa flash sale, nếu sale đã được cache, 
+thì phải cập nhật lại Redis ngay.
+nếu đang trong thời gian flash sale thì sẽ không được update thông tin sản phẩm sale
+
+
+FLASH-SALE
+↓ (Lua + Redis)  
+Flash Sale Service  
+↓ (publish flash.order)  
+RabbitMQ  
+↓  
+Order Service worker (flash)  
+↓  
+FlashPendingOrder (tạm)  
+↓  
+(người dùng bấm thanh toán trong 10 phút)  
+↓  
+POST /flash-sale/complete-order  
+↓  
+Order Service (tạo đơn thật)  
+↓ (publish order.created)  
+Inventory Service  
+↓ (publish stock.decreased / stock.failed)  
+Order Service worker (status)  
+↓  
+Gửi mail / thông báo  
+↓  
+Hoàn tất
+
+
+
+
+mai đọc trong cat gpt đoạn đến hiện tại luồng của tôi là flash-sale lua + redis + publish rồi, bên order-service lắng nghe, tạo work queue và tạo đơn tạm rồi, bây giờ khi người dùng đặt được hàng thì bên api của flash-sale-service sẽ trả ra return { ok: true, requestId, remaining: Number(remaining) };, sau đó hiển thị form nhập thông tin trong 10p, nếu ấn thánh toán sẽ gọi api POST /flash-sale/complete-order và tạo đơn thật, rồi publish sự kiện như luồng bình thường như là sang inventory trừ tồn kho trong db + redis thường => order-service nhận sự kiện trừ thành công và cập nhật trạng thái đơn hàng rồi gửi mail à
+
+đang viết api để gọi sau khi người dùng điền thông tin
+
+
+-sẽ có 1 trang flash sale riêng, khi ấn vào mua ngay thì sẽ vào trang chi tiết sản phẩm(trang này
+không có nút thêm giỏ hàng, chỉ có nút mua ngay, nếu thành công thì sang trang có form điền thông tin)
+-nếu 1 sản phẩm đã có trong giỏ hàng từ trước, đến khi nó flash sale, nếu mua từ giỏ hàng thì nó sẽ bán với giá gốc
+
+🟧 3. Shopee/Lazada làm thế nào?
+Nếu sản phẩm trong giỏ đang có Flash Sale, họ sẽ hiển thị:
+một nhãn “Sản phẩm đang Flash Sale → mua ngay để được giá tốt hơn”
+khi click vào → chuyển sang luồng flash sale
+không áp dụng giá flash sale trong giỏ hàng
+
+đã xong api admin thêm, cập nhật flashsale, cần xem là bên order-service cần thêm những api gì
+như là chi tiết sản phẩm nếu ấn flashsale, bên flash-sale-service cần thêm api gì, validate, quyền cập nhật
+thêm vào apigateway
+
+đang bị đến thời gian chuẩn bị flash sale mà nó chưa cache stock
+đang bị lệch thời gian do UTC, đang có cách là dùng 
+→ LƯU THỜI GIAN DƯỚI DẠNG TIMESTAMP (epoch milliseconds)
+
+Không dùng DATETIME, không dùng timezone.
+root
+
+
+code hiện tại vẫn chưa tự động chạy khi gần đến flash_sale để cache trong redis, và api là phải gọi
+rồi trả ra, nó không tự động được(xem giải tuyết lỗi timezone)
+
+-đang test đến đoạn api mua hàng, đã đến luồng khi test sẽ ra flash sale kết thúc rồi
+
+kiểm tra xem đã có đoạn trừ tồn kho ở trong bảng flash sale hay chưa
+
+
+mấy lần điền thông tin sau khi đặt được chỗ mà bị lỗi thì redis trong flash_sale:stock vẫn bị trừ
+còn của redis inventory thì đã đúng

@@ -7,7 +7,7 @@ services:
       - ./api-gateway/src:/app/src
     command: npm run dev
     ports:
-      - "8080:8080"
+      - "9090:8080"
     environment:
       NODE_ENV: development
   user-service:

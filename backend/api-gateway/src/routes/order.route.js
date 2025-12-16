@@ -7,5 +7,6 @@ const router = express.Router();
 const orderService = serviceUrls.order;
 
 router.post("/create", authMiddleware, proxyRequest(orderService));
+router.post("/flash-sale/complete-order", authMiddleware, proxyRequest(orderService));
 
 export default router;

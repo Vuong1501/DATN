@@ -6,7 +6,8 @@ import { connectRedis } from "../common/redis/redis.js";
 import { connectRabbitMQ } from "../common/rabbitmq/rabbitmq.js";
 // import { consumeProductEvent } from "./services/cartConsumer.js";
 // import { consumeOrderStatus } from "./consumers/orderStatus.consumer.js";
-// import orderRouter from "./routes/order.route.js";
+import { startFlashSalePreload } from "./cron/flashsalePreload.job.js";
+import flashsaleRouter from "./routes/flashsale.route.js";
 
 const app = express();
 
@@ -24,7 +25,7 @@ app.use(cors({
 }));
 app.use(cookieParser());
 
-// app.use("/order", orderRouter);
+app.use("/flashsale", flashsaleRouter);
 
 async function startServer() {
     try {
@@ -36,6 +37,7 @@ async function startServer() {
         await connectRabbitMQ(RABBITMQ_URL);
         // await consumeOrderStatus();
         // await consumeProductEvent();
+        startFlashSalePreload();
 
         console.log("NODE_ENV =", process.env.NODE_ENV);
 

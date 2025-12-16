@@ -6,6 +6,7 @@ import { connectRedis } from "../common/redis/redis.js";
 import { connectRabbitMQ } from "../common/rabbitmq/rabbitmq.js";
 // import { consumeProductEvent } from "./services/cartConsumer.js";
 import { consumeOrderStatus } from "./consumers/orderStatus.consumer.js";
+import { consumeFlashOrder } from "./consumers/flashsaleWorker.js";
 import orderRouter from "./routes/order.route.js";
 
 const app = express();
@@ -35,6 +36,7 @@ async function startServer() {
         await connectRedis(REDIS_URL);
         await connectRabbitMQ(RABBITMQ_URL);
         await consumeOrderStatus();
+        await consumeFlashOrder();
         // await consumeProductEvent();
 
         console.log("NODE_ENV =", process.env.NODE_ENV);

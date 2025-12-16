@@ -1,4 +1,4 @@
-import { createOrderService } from "../services/order.service.js";
+import { createOrderService, completeFlashSaleOrderService } from "../services/order.service.js";
 
 const createOrderController = async (req, res) => {
     try {
@@ -21,4 +21,39 @@ const createOrderController = async (req, res) => {
     };
 };
 
-export { createOrderController };
+const completeFlashSaleOrder = async (req, res) => {
+    try {
+        const userId = req.headers["x-user-id"];
+        const {
+            requestId,
+            phone,
+            userName,
+            address,
+            ward,
+            district,
+            province,
+            note
+        } = req.body;
+
+        const payload = {
+            requestId,
+            userId,
+            phone,
+            userName,
+            address,
+            ward,
+            district,
+            province,
+            note
+        };
+
+        const result = await completeFlashSaleOrderService(payload);
+
+        res.json({ ok: true, data: result });
+    } catch (error) {
+        console.error("Flash sale complete error:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+}
+
+export { createOrderController, completeFlashSaleOrder };

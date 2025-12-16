@@ -1,4 +1,4 @@
-import { Order, OrderDetail, sequelize } from "../models/index.js";
+import { Order, OrderDetail, FlashPendingOrder, sequelize } from "../models/index.js";
 import { getRedis } from "../../common/redis/redis.js";
 import { getChannel } from "../../common/rabbitmq/rabbitmq.js";
 import axios from "axios";
@@ -112,4 +112,87 @@ const createOrderService = async (payload) => {
 
 };
 
-export { createOrderService }
+const completeFlashSaleOrderService = async (payload) => {
+    const { requestId,
+        userId,
+        phone,
+        userName,
+        address,
+        ward,
+        district,
+        province,
+        note } = payload;
+
+    // lấy dữ liệu từ bảng tạm
+    const pending = await FlashPendingOrder.findOne({ where: { requestId } });
+    if (!pending) {
+        throw new Error("RequestId không hợp lệ hoặc đã hết hạn");
+    }
+
+    if (pending.status !== "PENDING") {
+        throw new Error("Đơn này đã được sử dụng hoặc đã hoàn tất");
+    }
+
+    // kiểm tra xem còn trong 10p không
+    const createdAt = new Date(pending.createdAt).getTime();
+    if (Date.now() - createdAt > 10 * 60 * 1000) {
+        throw new Error("Mã requestId đã hết hạn (quá 10 phút)");
+    }
+
+    const { productId, productSizeId, quantity, price } = pending;
+    // Tạo snapshot subtotal
+    const subtotal = Number(price) * quantity;
+
+    // tạo đơn hàng thật giống luồng khi mua bình thường
+    const t = await sequelize.transaction();
+    try {
+        const order = await Order.create({
+            userId,
+            phone,
+            username: userName,
+            address,
+            ward,
+            district,
+            province,
+            totalAmount: subtotal,
+            note,
+            status: "pending"
+        }, { transaction: t });
+
+        //tạo orderDetail
+        await OrderDetail.create({
+            orderId: order.id,
+            productId,
+            productSizeId,
+            productName: `FlashSale Product ${productId}`, // Nếu bạn muốn fetch thêm ở product-service thì bổ sung sau
+            sizeName: `Size ${productSizeId}`,              // Nếu muốn lấy real size thì gọi tiếp API
+            price,
+            quantity,
+            subtotal
+        }, { transaction: t });
+
+        // update bảng tạm
+        await pending.update({ status: "CONFIRMED" }, { transaction: t });
+        await t.commit();
+
+        //publish event sang inventory-service
+        const channel = getChannel();
+        const payload = {
+            orderId: order.id,
+            userId,
+            items: [
+                {
+                    productSizeId,
+                    quantity
+                }
+            ]
+        };
+        channel.publish("inventory_exchange", "order.created", Buffer.from(JSON.stringify(payload)));
+        return order;
+    } catch (error) {
+        await t.rollback();
+        throw error;
+    }
+};
+
+export { createOrderService, completeFlashSaleOrderService }

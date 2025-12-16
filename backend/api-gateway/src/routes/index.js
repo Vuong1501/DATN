@@ -4,6 +4,7 @@ import productRoutes from "./product.route.js";
 import inventoryRoutes from "./inventory.route.js";
 import cartRoutes from "./cart.route.js";
 import orderRoutes from "./order.route.js";
+import flashsaleRoutes from "./flashsale.route.js";
 
 const router = express.Router();
 
@@ -12,5 +13,6 @@ router.use("/product", productRoutes);
 router.use("/inventory", inventoryRoutes);
 router.use("/cart", cartRoutes);
 router.use("/order", orderRoutes);
+router.use("/flashsale", flashsaleRoutes);
 
 export default router;
